@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Smart Harvest | Secure Portal</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --primary-emerald: #00b894;
+            --deep-navy: #1e272e;
+            --surface-light: #f8fafc;
+            --text-main: #2d3436;
+        }
+
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: linear-gradient(135deg, #1e272e 0%, #2d3436 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Access Card */
+        .access-card {
+            background: white;
+            padding: 45px;
+            border-radius: 30px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-logo { 
+            font-size: 1.8rem; 
+            font-weight: 700; 
+            color: var(--deep-navy); 
+            text-align: center;
+            margin-bottom: 30px;
+            display: block;
+            text-decoration: none;
+        }
+        .card-logo span { color: var(--primary-emerald); }
+
+        /* Form Elements */
+        .form-label { font-weight: 600; color: #64748b; font-size: 0.85rem; }
+        .form-control, .form-select { 
+            border-radius: 12px; 
+            padding: 12px 16px; 
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+            margin-bottom: 15px;
+            transition: 0.3s;
+        }
+        .form-control:focus { 
+            border-color: var(--primary-emerald); 
+            box-shadow: 0 0 0 4px rgba(0, 184, 148, 0.1); 
+            background-color: white;
+        }
+
+        .btn-access {
+            background: var(--primary-emerald);
+            color: white;
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: none;
+            transition: 0.4s;
+            margin-top: 10px;
+        }
+        .btn-access:hover { background: #01a382; transform: translateY(-2px); }
+
+        /* Toggle Link */
+        .toggle-text { text-align: center; margin-top: 25px; font-size: 0.9rem; color: #64748b; }
+        .toggle-link { color: var(--primary-emerald); font-weight: 700; text-decoration: none; cursor: pointer; }
+        .toggle-link:hover { text-decoration: underline; }
+
+        .hidden { display: none; }
+        
+        /* Region Badge */
+        .badge-region { background: #e3fcf7; color: var(--primary-emerald); font-size: 0.75rem; padding: 5px 12px; border-radius: 50px; }
+    </style>
+</head>
+<body>
+
+    <div class="access-card animate__animated animate__zoomIn">
+        <a href="index.html" class="card-logo">🌾 Smart<span>Harvest</span></a>
+
+        <div id="login-section">
+            <h4 class="fw-bold mb-4 text-center">Farmer Login</h4>
+            <form onsubmit="handleAuth(event, 'login')">
+                <div>
+                    <label class="form-label">Farmer ID / Name</label>
+                    <input type="text" id="login-user" class="form-control" placeholder="e.g. Farmer_889" required>
+                </div>
+                <div>
+                    <label class="form-label">Secure Password</label>
+                    <input type="password" class="form-control" placeholder="••••••••" required>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="remember">
+                        <label class="form-check-label small" for="remember">Remember me</label>
+                    </div>
+                    <a href="#" class="small text-decoration-none text-muted">Forgot?</a>
+                </div>
+                <button type="submit" class="btn-access">Sign In to Dashboard</button>
+            </form>
+            <p class="toggle-text">New to the platform? <span class="toggle-link" onclick="toggleAuth()">Register Farm</span></p>
+        </div>
+
+        <div id="register-section" class="hidden">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold mb-0">Create Account</h4>
+                <span class="badge-region">Gujarat & Jharkhand Only</span>
+            </div>
+            <p class="text-muted small mb-4">Join 5,000+ farmers using AI for better yields.</p>
+            
+            <form onsubmit="handleAuth(event, 'register')">
+                <div class="row g-2">
+                    <div class="col-md-12">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" id="reg-name" class="form-control" placeholder="John Doe" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Select Region</label>
+                        <select class="form-select" required>
+                            <option value="Gujarat">Gujarat</option>
+                            <option value="Jharkhand">Jharkhand</option>
+                            <option value="Other">Other Region</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Primary Soil</label>
+                        <select class="form-select" required>
+                            <option value="Black">Black Soil</option>
+                            <option value="Red">Red Soil</option>
+                            <option value="Sandy">Sandy Soil</option>
+                        </select>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Set Password</label>
+                        <input type="password" class="form-control" placeholder="Create strong password" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-access">Complete Registration</button>
+            </form>
+            <p class="toggle-text">Already registered? <span class="toggle-link" onclick="toggleAuth()">Login here</span></p>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="index.html" class="text-muted small text-decoration-none"><i class="bi bi-arrow-left me-1"></i> Back to Homepage</a>
+        </div>
+    </div>
+
+    <script>
+        function toggleAuth() {
+            const login = document.getElementById('login-section');
+            const register = document.getElementById('register-section');
+            
+            if (login.classList.contains('hidden')) {
+                login.classList.remove('hidden');
+                login.classList.add('animate__animated', 'animate__fadeIn');
+                register.classList.add('hidden');
+            } else {
+                login.classList.add('hidden');
+                register.classList.remove('hidden');
+                register.classList.add('animate__animated', 'animate__fadeIn');
+            }
+        }
+
+        function handleAuth(event, type) {
+            event.preventDefault();
+            
+            // Get name based on which form is active
+            const name = type === 'login' 
+                ? document.getElementById('login-user').value 
+                : document.getElementById('reg-name').value;
+            
+            // Session simulation
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('farmerName', name);
+            
+            // Redirect to Dashboard
+            window.location.href = "dashboard.html";
+        }
+    </script>
+
+</body>
+</html>
