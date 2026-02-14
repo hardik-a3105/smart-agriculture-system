@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Harvest | AI-Driven Agriculture</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --primary-emerald: #00b894;
+            --deep-navy: #1e272e;
+            --surface-light: #f8fafc;
+            --surface-muted: #e2e8f0;
+            --text-main: #2d3436;
+            --accent-gradient: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+        }
+
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: var(--surface-light); 
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Balanced Navbar */
+        .navbar { 
+            background-color: rgba(30, 39, 46, 0.98); 
+            backdrop-filter: blur(10px);
+            padding: 15px 0; 
+            border-bottom: 3px solid var(--primary-emerald);
+            transition: 0.4s;
+        }
+        .navbar-brand { font-weight: 700; font-size: 1.5rem; letter-spacing: -0.5px; }
+        .navbar-brand span { color: var(--primary-emerald); }
+        .nav-link { font-weight: 500; color: rgba(255,255,255,0.85) !important; margin: 0 12px; }
+        .nav-link:hover, .nav-link.active { color: var(--primary-emerald) !important; }
+
+        /* Sophisticated Hero Section */
+        .hero-section {
+            background: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), 
+                        url('https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            min-height: 90vh;
+            display: flex;
+            align-items: center;
+            color: white;
+            padding-top: 80px;
+        }
+        .hero-title { font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 800; line-height: 1.1; }
+        .hero-tagline { font-size: 1.25rem; color: #cbd5e1; max-width: 650px; margin-bottom: 2rem; }
+
+        /* Modern Service Cards */
+        .service-overlap { margin-top: -80px; position: relative; z-index: 20; }
+        .feature-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 24px;
+            padding: 40px 30px;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            height: 100%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .feature-card:hover {
+            transform: translateY(-12px);
+            background: #ffffff;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+        }
+        .icon-box {
+            width: 70px; height: 70px;
+            background: var(--accent-gradient);
+            color: white;
+            border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; margin: 0 auto 25px;
+            box-shadow: 0 8px 20px rgba(0, 184, 148, 0.3);
+        }
+
+        /* Stats Section - The Neutral "Middle" Ground */
+        .stats-bar { background: white; padding: 60px 0; border-bottom: 1px solid var(--surface-muted); }
+        .stat-item h2 { font-weight: 800; color: var(--deep-navy); margin-bottom: 5px; }
+        .stat-item p { color: var(--primary-emerald); font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
+
+        /* Buttons */
+        .btn-custom { padding: 12px 35px; border-radius: 12px; font-weight: 600; transition: 0.3s; }
+        .btn-primary-smart { background: var(--primary-emerald); color: white; border: none; }
+        .btn-primary-smart:hover { background: #01a382; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4); color: white; }
+        
+        /* Footer */
+        footer { background: var(--deep-navy); color: #94a3b8; padding: 60px 0 30px; }
+        .footer-link { color: #cbd5e1; text-decoration: none; transition: 0.3s; }
+        .footer-link:hover { color: var(--primary-emerald); }
+
+        /* Dynamic UI Elements */
+        .auth-btn-container .btn-profile {
+            border: 2px solid var(--primary-emerald);
+            color: var(--primary-emerald);
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">🌾 Smart<span>Harvest</span></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link active" href="index.html">Home</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Decision Tools</a>
+                        <ul class="dropdown-menu shadow border-0 rounded-3">
+                            <li><a class="dropdown-item py-2" href="crop.html">🌱 Crop Advisor</a></li>
+                            <li><a class="dropdown-item py-2" href="fertilizer.html">🧪 Fertilizer Guide</a></li>
+                            <li><a class="dropdown-item py-2" href="yield.html">📈 Yield Prediction</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="about.html">Our Vision</a></li>
+                    <li class="nav-item"><a class="nav-link" href="help.html">Support</a></li>
+                    <li class="nav-item ms-lg-4 auth-btn-container" id="auth-slot">
+                        <a href="login.html" class="btn btn-custom btn-primary-smart px-4 py-2">Farmer Login</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-7 animate__animated animate__fadeInLeft">
+                    <h1 class="hero-title mb-4">Cultivating The Future With <span style="color: var(--primary-emerald)">Intelligence.</span></h1>
+                    <p class="hero-tagline">Experience the fusion of traditional farming wisdom and advanced Machine Learning. Optimize your soil, protect your yield, and grow with confidence.</p>
+                    <div class="d-flex gap-3 mt-5">
+                        <a href="#tools" class="btn btn-custom btn-primary-smart btn-lg">Start Analyzing</a>
+                        <a href="about.html" class="btn btn-custom btn-outline-light btn-lg">Watch Demo</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="tools" class="container service-overlap">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card animate__animated animate__fadeInUp">
+                    <div class="icon-box"><i class="bi bi-tree-fill"></i></div>
+                    <h4 class="fw-bold">Crop Advisor</h4>
+                    <p class="text-muted small">We analyze NPK levels and climate data to suggest the most profitable crop for your unique land.</p>
+                    <a href="crop.html" class="btn btn-sm btn-outline-success rounded-pill mt-3 px-4">Predict Now</a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+                    <div class="icon-box"><i class="bi bi-droplet-half"></i></div>
+                    <h4 class="fw-bold">Fertilizer Guide</h4>
+                    <p class="text-muted small">Stop the guesswork. Get precise chemical and organic nutrient recommendations for healthier soil.</p>
+                    <a href="fertilizer.html" class="btn btn-sm btn-outline-success rounded-pill mt-3 px-4">Get Dosage</a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+                    <div class="icon-box"><i class="bi bi-graph-up-arrow"></i></div>
+                    <h4 class="fw-bold">Yield Estimator</h4>
+                    <p class="text-muted small">Plan your finances with accuracy. Forecast production volume based on regional historical trends.</p>
+                    <a href="yield.html" class="btn btn-sm btn-outline-success rounded-pill mt-3 px-4">Estimate Yield</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats-bar text-center">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 stat-item">
+                    <h2>92.4%</h2>
+                    <p>Model Accuracy</p>
+                </div>
+                <div class="col-md-4 stat-item">
+                    <h2>5,000+</h2>
+                    <p>Active Farmers</p>
+                </div>
+                <div class="col-md-4 stat-item">
+                    <h2>12+</h2>
+                    <p>Supported Regions</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5 mt-5">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <img src="https://www.telit.com/wp-content/uploads/2021/08/smart-farming-2.jpg" class="img-fluid rounded-4 shadow-lg" alt="Smart Farming">
+                </div>
+                <div class="col-lg-6">
+                    <h6 class="text-success fw-bold text-uppercase mb-3">Innovation in Every Acre</h6>
+                    <h2 class="fw-bold mb-4">Smart Agriculture Decision Support System</h2>
+                    <p class="text-muted mb-4">Developed for the Smart India Hackathon, our system is optimized for diverse soil patterns, including specific datasets for <strong>Gujarat and Jharkhand</strong>. We bridge the gap between complex data and actionable farm insights.</p>
+                    <ul class="list-unstyled mb-5">
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i> Real-time environmental data integration</li>
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i> User-friendly Dashboard for tracking history</li>
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i> Multi-language support (English/Gujarati/Hindi)</li>
+                    </ul>
+                    <a href="dashboard.html" class="btn btn-dark btn-custom">Access Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <div class="col-lg-4">
+                    <h4 class="text-white fw-bold mb-4">🌾 Smart<span>Harvest</span></h4>
+                    <p class="small">Empowering the agricultural backbone of our nation through data science and artificial intelligence.</p>
+                </div>
+                <div class="col-lg-2 ms-auto">
+                    <h6 class="text-white fw-bold mb-3">Quick Links</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="about.html" class="footer-link small">About Us</a></li>
+                        <li><a href="contact.html" class="footer-link small">Contact</a></li>
+                        <li><a href="help.html" class="footer-link small">Help Center</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3">
+                    <h6 class="text-white fw-bold mb-3">Our Models</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="crop.html" class="footer-link small">Crop Recommendation</a></li>
+                        <li><a href="fertilizer.html" class="footer-link small">Fertilizer Advisory</a></li>
+                        <li><a href="yield.html" class="footer-link small">Yield Prediction</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="border-secondary">
+            <div class="d-flex justify-content-between align-items-center pt-3 small">
+                <p class="mb-0">© 2026 Smart Harvest System. All Rights Reserved.</p>
+                <div class="d-flex gap-3">
+                    <a href="#" class="footer-link"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="footer-link"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" class="footer-link"><i class="bi bi-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check session from localStorage
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            const farmerName = localStorage.getItem('farmerName');
+            const authSlot = document.getElementById('auth-slot');
+            
+            if (isLoggedIn === 'true' && farmerName) {
+                authSlot.innerHTML = `
+                    <div class="dropdown">
+                        <button class="btn btn-custom btn-profile dropdown-toggle" data-bs-toggle="dropdown">
+                            👤 ${farmerName}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                            <li><a class="dropdown-item py-2" href="profile.html">My Profile</a></li>
+                            <li><a class="dropdown-item py-2" href="dashboard.html">Dashboard</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><button onclick="handleLogout()" class="dropdown-item py-2 text-danger">Logout</button></li>
+                        </ul>
+                    </div>
+                `;
+            }
+        });
+
+        function handleLogout() {
+            if(confirm("Sign out of Smart Harvest?")) {
+                localStorage.clear();
+                window.location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
