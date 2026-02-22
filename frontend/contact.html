@@ -273,8 +273,22 @@
     <script>
         function handleContact(event) {
             event.preventDefault();
-            alert("Thank you! Your message has been sent to the Smart Harvest support team.");
-            window.location.href = "index.html";
+            const form = event.target;
+            const btn = form.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+
+            // Simulate sending (replace with real API call if needed)
+            setTimeout(() => {
+                form.innerHTML = `
+                    <div class="text-center py-5">
+                        <div style="font-size:4rem;">✅</div>
+                        <h4 class="fw-bold mt-3">Message Sent!</h4>
+                        <p class="text-muted">Thank you! Our support team will reach you within 24 hours.</p>
+                        <a href="index.html" class="btn btn-success rounded-pill px-4 mt-2">Back to Home</a>
+                    </div>
+                `;
+            }, 600);
         }
     </script>
 </body>

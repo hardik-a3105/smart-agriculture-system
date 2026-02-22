@@ -68,7 +68,7 @@ app.post("/login", async (req, res) => {
       return res.status(401).json({ success: false, message: "Incorrect password" });
     }
 
-    res.json({ success: true, message: "Login successful 🎉", name: user.name });
+    res.json({ success: true, message: "Login successful 🎉", name: user.name, email: user.email, region: user.region, soil: user.soil });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ success: false, message: "Server error. Please try again." });
@@ -83,6 +83,12 @@ app.post("/register", async (req, res) => {
     // Validation
     if (!name || !email || !region || !soil || !password) {
       return res.status(400).json({ success: false, message: "All fields required" });
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ success: false, message: "Invalid email format" });
     }
 
     if (password.length < 6) {

@@ -97,7 +97,7 @@
     <div class="access-card animate__animated animate__fadeInUp">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <a href="index.html" class="card-logo">🌾 Smart<span>Harvest</span></a>
-            <span class="badge-region">Gujarat & Jharkhand Only</span>
+            <span class="badge-region">Gujarat, Jharkhand &amp; Maharashtra</span>
         </div>
 
         <h4 class="fw-bold mb-1">Create Account</h4>
@@ -116,8 +116,10 @@
                 <div class="col-md-6">
                     <label class="form-label">Select Region</label>
                     <select class="form-select" id="regRegion" required>
+                        <option value="" disabled selected>Select Region...</option>
                         <option value="Gujarat">Gujarat</option>
                         <option value="Jharkhand">Jharkhand</option>
+                        <option value="Maharashtra">Maharashtra</option>
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -131,7 +133,12 @@
                 <div class="col-12">
                     <label class="form-label">Set Password</label>
                     <input type="password" id="regPassword" class="form-control" placeholder="Create strong password"
-                        required>
+                        required autocomplete="new-password">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" id="regConfirmPassword" class="form-control"
+                        placeholder="Repeat your password" required autocomplete="new-password">
                 </div>
             </div>
             <button type="submit" class="btn-access">Complete Registration</button>
@@ -170,6 +177,13 @@
                 return;
             }
 
+            const confirmPwd = document.getElementById("regConfirmPassword").value.trim();
+            if (formData.password !== confirmPwd) {
+                msgDiv.style.color = "#ff4757";
+                msgDiv.innerText = "Passwords do not match.";
+                return;
+            }
+
             msgDiv.innerText = "Creating account...";
             msgDiv.style.color = "#64748b";
             submitBtn.disabled = true;
@@ -185,6 +199,9 @@
 
                 if (data.success) {
                     localStorage.setItem('farmerName', formData.name);
+                    localStorage.setItem('farmerEmail', formData.email);
+                    localStorage.setItem('farmerRegion', formData.region);
+                    localStorage.setItem('farmerSoil', formData.soil);
                     msgDiv.style.color = "var(--primary-emerald)";
                     msgDiv.innerText = "Success! Account created. Redirecting...";
 

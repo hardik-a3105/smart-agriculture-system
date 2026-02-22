@@ -149,6 +149,9 @@
                 if (data.success) {
                     localStorage.setItem('isLoggedIn', 'true');
                     localStorage.setItem('farmerName', data.name || email);
+                    localStorage.setItem('farmerEmail', data.email || email);
+                    if (data.region) localStorage.setItem('farmerRegion', data.region);
+                    if (data.soil) localStorage.setItem('farmerSoil', data.soil);
                     msgDiv.style.color = "var(--primary-emerald)";
                     msgDiv.innerText = "Login successful! Redirecting...";
 

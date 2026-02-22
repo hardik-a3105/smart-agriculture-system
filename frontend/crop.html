@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="AI-powered crop recommendation tool. Enter your soil NPK levels and climate data to get the best crop suggestion for your farm.">
     <title>Crop Advisor | Smart Harvest</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -123,6 +125,11 @@
             gap: 20px;
         }
 
+        .prediction-result.error-result {
+            background: linear-gradient(to right, #fff5f5, #fff8f8);
+            border-color: #fc5c65;
+        }
+
         .result-text {
             font-size: 2.5rem;
             font-weight: 800;
@@ -141,12 +148,29 @@
             transition: 0.4s;
             margin-top: 30px;
             box-shadow: 0 10px 20px rgba(0, 184, 148, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
         .btn-predict:hover {
             background: #01a382;
             transform: translateY(-3px);
             box-shadow: 0 15px 30px rgba(0, 184, 148, 0.3);
+        }
+
+        .btn-predict:disabled {
+            background: #94a3b8;
+            transform: none;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+            border-width: 0.15em;
         }
 
         footer {
@@ -191,16 +215,17 @@
         <div class="form-card animate__animated animate__fadeInUp">
 
             {% if prediction %}
-            <div class="prediction-result animate__animated animate__zoomIn">
-                <div class="icon-box" style="font-size: 3rem;">🌱</div>
+            <div class="prediction-result animate__animated animate__zoomIn {% if error %}error-result{% endif %}">
+                <div class="icon-box" style="font-size: 3rem;">{% if error %}⚠️{% else %}🌱{% endif %}</div>
                 <div>
-                    <p class="text-muted small text-uppercase fw-bold mb-0">Recommended Crop</p>
+                    <p class="text-muted small text-uppercase fw-bold mb-0">{% if error %}Error{% else %}Recommended
+                        Crop{% endif %}</p>
                     <h2 class="result-text mb-0">{{ prediction }}</h2>
                 </div>
             </div>
             {% endif %}
 
-            <form action="/predict_crop" method="POST">
+            <form action="/predict_crop" method="POST" id="cropForm">
 
                 <div class="d-flex align-items-center mb-4">
                     <div class="bg-success bg-opacity-10 text-success rounded-circle p-2 me-3">
@@ -211,16 +236,21 @@
 
                 <div class="row g-4 mb-5">
                     <div class="col-md-4">
-                        <label class="form-label">Nitrogen (N)</label>
-                        <input type="number" name="n" class="form-control" placeholder="e.g. 90" required>
+                        <label class="form-label">Nitrogen (N) <span class="text-muted fw-normal">(0–140)</span></label>
+                        <input type="number" name="n" class="form-control" placeholder="e.g. 90" min="0" max="140"
+                            step="1" required>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Phosphorus (P)</label>
-                        <input type="number" name="p" class="form-control" placeholder="e.g. 42" required>
+                        <label class="form-label">Phosphorus (P) <span
+                                class="text-muted fw-normal">(5–145)</span></label>
+                        <input type="number" name="p" class="form-control" placeholder="e.g. 42" min="5" max="145"
+                            step="1" required>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Potassium (K)</label>
-                        <input type="number" name="k" class="form-control" placeholder="e.g. 43" required>
+                        <label class="form-label">Potassium (K) <span
+                                class="text-muted fw-normal">(5–205)</span></label>
+                        <input type="number" name="k" class="form-control" placeholder="e.g. 43" min="5" max="205"
+                            step="1" required>
                     </div>
                 </div>
 
@@ -233,41 +263,45 @@
 
                 <div class="row g-4">
                     <div class="col-md-6">
-                        <label class="form-label">Temperature (°C)</label>
+                        <label class="form-label">Temperature (°C) <span
+                                class="text-muted fw-normal">(0–50)</span></label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-thermometer-sun"></i></span>
                             <input type="number" step="0.01" name="temperature" class="form-control"
-                                placeholder="e.g. 25.6" required>
+                                placeholder="e.g. 25.6" min="0" max="50" required>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Humidity (%)</label>
+                        <label class="form-label">Humidity (%) <span class="text-muted fw-normal">(0–100)</span></label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-cloud-haze"></i></span>
                             <input type="number" step="0.01" name="humidity" class="form-control"
-                                placeholder="e.g. 82.3" required>
+                                placeholder="e.g. 82.3" min="0" max="100" required>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Soil pH Level</label>
+                        <label class="form-label">Soil pH Level <span class="text-muted fw-normal">(0–14)</span></label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-vignette"></i></span>
                             <input type="number" step="0.01" name="ph" class="form-control" placeholder="0.0 - 14.0"
-                                required>
+                                min="0" max="14" required>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Rainfall (mm)</label>
+                        <label class="form-label">Rainfall (mm) <span
+                                class="text-muted fw-normal">(0–5000)</span></label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-cloud-rain"></i></span>
                             <input type="number" step="0.01" name="rainfall" class="form-control"
-                                placeholder="e.g. 202.9" required>
+                                placeholder="e.g. 202.9" min="0" max="5000" required>
                         </div>
                     </div>
                 </div>
 
-                <button type="submit" class="btn-predict">
-                    <i class="bi bi-cpu me-2"></i> Run Prediction Model
+                <button type="submit" class="btn-predict" id="predictBtn">
+                    <i class="bi bi-cpu"></i>
+                    <span id="btnText">Run Prediction Model</span>
+                    <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
                 </button>
             </form>
         </div>
@@ -276,7 +310,8 @@
     <section class="container py-4 text-center">
         <p class="text-muted small">
             <i class="bi bi-info-circle me-1"></i>
-            This model uses <strong>Random Forest Regression</strong> trained on Indian soil datasets for 99% accuracy.
+            This model uses <strong>Random Forest Classification</strong> trained on Indian soil datasets for 99%
+            accuracy. Input values from your soil health card for best results.
         </p>
     </section>
 
@@ -288,6 +323,16 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('cropForm').addEventListener('submit', function () {
+            const btn = document.getElementById('predictBtn');
+            const txt = document.getElementById('btnText');
+            const spin = document.getElementById('btnSpinner');
+            btn.disabled = true;
+            txt.textContent = 'Analyzing...';
+            spin.classList.remove('d-none');
+        });
+    </script>
 </body>
 
 </html>
