@@ -196,57 +196,81 @@ def predict_fertilizer():
 @app.route("/predict_yield", methods=["POST"])
 def predict_yield():
     try:
-        region       = request.form["Region"]
-        crop         = request.form["Crop"]
-        soil_type    = request.form["Soil_Type"]
-        rainfall     = float(request.form["Rainfall_mm"])
-        temperature  = float(request.form["Temperature_Celsius"])
-        weather      = request.form["Weather_Condition"]
-        fert_used    = request.form["Fertilizer_Used"]
-        irrig_used   = request.form["Irrigation_Used"]
-        days_harvest = int(request.form["Days_to_Harvest"])
+        state           = request.form["State"]
+        crop            = request.form["Crop"]
+        crop_year       = int(request.form["Crop_Year"])
+        season          = request.form["Season"]
+        area            = float(request.form["Area"])
+        annual_rainfall = float(request.form["Annual_Rainfall"])
+        fertilizer      = float(request.form["Fertilizer"])
+        pesticide       = float(request.form["Pesticide"])
 
         # Validate ranges
-        validate_range(rainfall,     0, 5000, "Rainfall")
-        validate_range(temperature,  0,   60, "Temperature")
-        validate_range(days_harvest, 1,  365, "Days to Harvest")
+        validate_range(area,            0, 100000, "Area")
+        validate_range(annual_rainfall, 0,   5000, "Annual Rainfall")
+        validate_range(fertilizer,      0,  10000, "Fertilizer")
+        validate_range(pesticide,       0,   1000, "Pesticide")
+        validate_range(crop_year,    1900,   2100, "Crop Year")
 
         # --- Use trained yield model if available ---
-        if yield_model is not None and le_crop_yield is not None and le_state_yield is not None:
+        if (yield_model is not None and le_crop_yield is not None
+                and le_state_yield is not None and le_season_yield is not None):
             try:
-                crop_enc  = le_crop_yield.transform([crop])[0]
-                state_enc = le_state_yield.transform([region])[0]
-                fert_bin  = 1 if fert_used == "Yes" else 0
-                irrig_bin = 1 if irrig_used == "Yes" else 0
+                crop_enc   = le_crop_yield.transform([crop])[0]
+                season_enc = le_season_yield.transform([season])[0]
+                state_enc  = le_state_yield.transform([state])[0]
 
-                input_arr = np.array([[crop_enc, state_enc, rainfall, temperature, fert_bin, irrig_bin, days_harvest]])
+                # The model was trained with a Production column. Since users
+                # cannot know production in advance, we estimate it using the
+                # area and a reasonable median yield (≈ 1.0 ton/hectare).
+                estimated_production = area * 1.0
+
+                # Feature order must match training:
+                # Crop, Crop_Year, Season, State, Area, Production,
+                # Annual_Rainfall, Fertilizer, Pesticide
+                input_arr = np.array([[
+                    crop_enc, crop_year, season_enc, state_enc,
+                    area, estimated_production,
+                    annual_rainfall, fertilizer, pesticide
+                ]])
                 prediction = round(float(yield_model.predict(input_arr)[0]), 2)
-                logger.info(f"Yield predicted (model): {prediction} | Region={region}, Crop={crop}")
+                logger.info(
+                    f"Yield predicted (model): {prediction}"
+                    f" | State={state}, Crop={crop}, Season={season}"
+                )
             except Exception as enc_err:
-                logger.warning(f"Yield model encoding failed, falling back to heuristic: {enc_err}")
-                prediction = _heuristic_yield(rainfall, fert_used, irrig_used)
+                logger.warning(
+                    f"Yield model encoding failed, falling back to heuristic: {enc_err}"
+                )
+                prediction = _heuristic_yield(area, annual_rainfall, fertilizer)
         else:
             logger.info("Yield model not loaded, using heuristic estimation.")
-            prediction = _heuristic_yield(rainfall, fert_used, irrig_used)
+            prediction = _heuristic_yield(area, annual_rainfall, fertilizer)
 
         return render_template("yield.html", yield_prediction=prediction)
 
     except ValueError as ve:
         logger.warning(f"Yield validation error: {ve}")
-        return render_template("yield.html", yield_prediction=f"Input Error: {ve}")
+        return render_template("yield.html", yield_prediction=f"Input Error: {ve}", error=True)
     except Exception as e:
         logger.error(f"Yield prediction failed: {e}")
-        return render_template("yield.html", yield_prediction="Prediction failed. Please check your inputs.")
+        return render_template(
+            "yield.html",
+            yield_prediction="Prediction failed. Please check your inputs.",
+            error=True,
+        )
 
-def _heuristic_yield(rainfall, fert_used, irrig_used):
+def _heuristic_yield(area, annual_rainfall, fertilizer):
     """Simple heuristic fallback when the ML model is unavailable."""
-    base = 3.5
-    if fert_used == "Yes":
-        base += 0.8
-    if irrig_used == "Yes":
-        base += 0.5
-    base += (rainfall / 1000) * 0.3
-    return round(base, 2)
+    # Estimate yield (tons per hectare) from available data
+    base_yield = 1.0
+    # Rainfall factor: more rainfall generally helps, up to a point
+    rainfall_factor = min(annual_rainfall / 1200.0, 2.0)
+    # Fertilizer factor: more fertilizer generally boosts production
+    fert_factor = 1.0 + min(fertilizer / 5000.0, 1.0)
+    estimated_yield = base_yield * rainfall_factor * fert_factor
+    # Return total production estimate (yield * area)
+    return round(estimated_yield * area, 2)
 
 # ================== RUN APP ==================
 if __name__ == "__main__":
