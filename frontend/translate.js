@@ -40,6 +40,46 @@ function changeLanguage(lang) {
     }
 }
 
+// --- CENTRALIZED AUTH & NAVBAR LOGIC ---
+document.addEventListener('DOMContentLoaded', function () {
+    const authSlot = document.getElementById('auth-slot');
+    if (authSlot) {
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+        const farmerName = localStorage.getItem('farmerName') || 'Farmer';
+        
+        if (isLoggedIn) {
+            authSlot.innerHTML = `
+                <div class="dropdown">
+                    <button class="btn dropdown-toggle" data-bs-toggle="dropdown" style="border: 2px solid #00b894; color: #00b894; background: transparent; padding: 6px 15px; border-radius: 8px; font-weight: 600;">
+                        👤 ${farmerName}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                        <li><a class="dropdown-item py-2" href="profile.html">My Profile</a></li>
+                        <li><a class="dropdown-item py-2" href="dashboard.html">Dashboard</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><button onclick="handleLogout()" class="dropdown-item py-2 text-danger">Logout</button></li>
+                    </ul>
+                </div>
+            `;
+        } else {
+            authSlot.innerHTML = `
+                <a href="login.html" class="btn" style="background: #00b894; color: white; padding: 8px 20px; border-radius: 12px; font-weight: 600;">Farmer Login</a>
+            `;
+        }
+    }
+});
+
+window.handleLogout = function() {
+    if (confirm("Sign out of Smart Harvest?")) {
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('farmerName');
+        localStorage.removeItem('farmerEmail');
+        localStorage.removeItem('farmerRegion');
+        localStorage.removeItem('farmerSoil');
+        window.location.href = "login.html";
+    }
+};
+
 // 3. Initialize Google Translate in the hidden div
 function googleTranslateElementInit() {
     new google.translate.TranslateElement({

@@ -40,8 +40,12 @@ const UserSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true
-  }
-});
+  },
+  phone: { type: String, default: "" },
+  language: { type: String, default: "en" },
+  landArea: { type: Number, default: 0 },
+  primaryCrop: { type: String, default: "" }
+}, { timestamps: true });
 
 const User = mongoose.model("User", UserSchema);
 
@@ -120,7 +124,46 @@ app.post("/register", async (req, res) => {
     res.status(201).json({ success: true, message: "Registration successful ✅" });
   } catch (error) {
     console.error("Registration error:", error);
-    res.status(500).json({ success: false, message: "Server error. Please try again." });
+    res.status(500).json({ success: false, message: "Server error. Please try again.", error: error.message, stack: error.stack });
+  }
+});
+
+// ================= PROFILE Endpoints =================
+app.get("/api/profile/:email", async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.params.email }).select("-password");
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error("Fetch profile error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.put("/api/profile", async (req, res) => {
+  try {
+    const { email, name, phone, language, region, landArea, soil, primaryCrop } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required to update profile" });
+    }
+
+    const updatedUser = await User.findOneAndUpdate(
+      { email },
+      { name, phone, language, region, landArea, soil, primaryCrop },
+      { new: true }
+    ).select("-password");
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.json({ success: true, message: "Profile updated successfully", user: updatedUser });
+  } catch (error) {
+    console.error("Update profile error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 

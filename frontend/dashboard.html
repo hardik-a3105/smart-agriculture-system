@@ -259,10 +259,6 @@
                             <li><a class="dropdown-item py-2" href="yield.html">Yield Prediction</a></li>
                         </ul>
                     </li>
-                    <li class="nav-item ms-lg-4">
-                        <button onclick="handleLogout()" class="btn btn-outline-light rounded-pill px-4 btn-sm">Sign
-                            Out</button>
-                    </li>
                     <li class="nav-item ms-lg-2">
                         <select class="lang-dropdown" id="langSelect" onchange="changeLanguage(this.value)">
                             <option value="en">English</option>
@@ -270,6 +266,7 @@
                             <option value="gu">Gujarati</option>
                         </select>
                     </li>
+                    <li class="nav-item ms-lg-4" id="auth-slot"></li>
                 </ul>
             </div>
         </div>
@@ -334,11 +331,11 @@
                         <div class="profile-item"><span class="profile-label">Soil Profile</span><span
                                 class="profile-value" id="dash-soil">Black Soil (Clayey)</span></div>
                         <div class="profile-item"><span class="profile-label">Land Area</span><span
-                                class="profile-value">12.5 Hectares</span></div>
+                                class="profile-value" id="dash-landArea">12.5 Hectares</span></div>
                         <div class="profile-item"><span class="profile-label">Primary Crop</span><span
-                                class="profile-value">Cotton / Wheat</span></div>
+                                class="profile-value" id="dash-primaryCrop">Cotton / Wheat</span></div>
                         <div class="profile-item"><span class="profile-label">Member Since</span><span
-                                class="profile-value">Oct 2024</span></div>
+                                class="profile-value" id="dash-memberSince">Oct 2024</span></div>
                     </div>
                     <div class="mt-5 p-3 rounded-4"
                         style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
@@ -404,33 +401,65 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', async function () {
             // 1. Update Farmer Name from Login
-            const name = localStorage.getItem('farmerName') || 'Farmer';
-            document.getElementById('farmer-welcome').innerText = `Welcome back, ${name}!`;
+            const email = localStorage.getItem('farmerEmail');
+            if (!email || localStorage.getItem('isLoggedIn') !== 'true') {
+                window.location.href = "login.html";
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/profile/${email}`);
+                const data = await response.json();
+
+                if (data.success && data.user) {
+                    const user = data.user;
+                    
+                    // Update UI elements
+                    document.getElementById('farmer-welcome').innerText = `Welcome back, ${user.name}!`;
+                    document.getElementById('dash-region').innerText = user.region || 'Not Set';
+                    document.getElementById('dash-soil').innerText = user.soil || 'Not Set';
+                    document.getElementById('dash-landArea').innerText = user.landArea ? `${user.landArea} Hectares` : 'Not Set';
+                    document.getElementById('dash-primaryCrop').innerText = user.primaryCrop || 'Not Set';
+                    
+                    if (user.createdAt) {
+                        const date = new Date(user.createdAt);
+                        const options = { month: 'short', year: 'numeric' };
+                        document.getElementById('dash-memberSince').innerText = date.toLocaleDateString('en-US', options);
+                    } else {
+                        document.getElementById('dash-memberSince').innerText = 'Recent';
+                    }
+
+                    // Sync localStorage
+                    localStorage.setItem('farmerName', user.name);
+                    localStorage.setItem('farmerRegion', user.region);
+                    localStorage.setItem('farmerSoil', user.soil);
+                    console.log(`System initialized dynamically for: ${user.name}`);
+                }
+            } catch (error) {
+                console.error("Failed to fetch profile from backend:", error);
+                
+                // Fallback to local storage if backend fetch fails
+                const name = localStorage.getItem('farmerName') || 'Farmer';
+                const region = localStorage.getItem('farmerRegion') || 'Not Set';
+                const soil = localStorage.getItem('farmerSoil') || 'Not Set';
+
+                document.getElementById('farmer-welcome').innerText = `Welcome back, ${name}!`;
+                document.getElementById('dash-region').innerText = region;
+                document.getElementById('dash-soil').innerText = soil;
+                document.getElementById('dash-landArea').innerText = 'Offline';
+                document.getElementById('dash-primaryCrop').innerText = 'Offline';
+                document.getElementById('dash-memberSince').innerText = '--';
+                console.log(`System initialized offline for: ${name}`);
+            }
 
             // 2. Set Real-time Date
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             const today = new Date();
             document.getElementById('live-date').innerText = today.toLocaleDateString('en-US', options);
-
-            // 3. Dynamic Profile Update
-            const region = localStorage.getItem('farmerRegion') || 'Not Set';
-            const soil = localStorage.getItem('farmerSoil') || 'Not Set';
-
-            document.getElementById('dash-region').innerText = region;
-            document.getElementById('dash-soil').innerText = soil;
-
-            console.log(`System initialized for: ${name}`);
         });
 
-        // Logout Logic
-        function handleLogout() {
-            if (confirm("Logout from Smart Harvest?")) {
-                localStorage.clear();
-                window.location.href = "index.html";
-            }
-        }
     </script>
     <div id="google_translate_element" style="display:none;"></div>
     <script src="translate.js"></script>

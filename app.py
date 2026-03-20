@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 import joblib
 import os
+from functools import wraps
+import signal
 
 # ================== LOGGING SETUP ==================
 logging.basicConfig(
@@ -14,33 +16,79 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__, template_folder='frontend', static_folder='frontend', static_url_path='')
 
+# ================== FLASK OPTIMIZATION ==================
+# Disable auto-reloading of template files in production for faster performance
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000  # Cache static files for 1 year
+app.jinja_env.cache = {}  # Use Jinja2 cache
+
 # ================== LOAD MODELS ==================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Model cache dictionary for lazy loading
+_model_cache = {}
+
 def load_model(path):
-    """Load a model safely, log errors if the file is missing."""
+    """Load a model safely with caching, log errors if the file is missing."""
+    # Check if already loaded
+    if path in _model_cache:
+        return _model_cache[path]
+    
     full_path = os.path.join(BASE_DIR, path)
     try:
+        logger.info(f"Loading model: {path}")
         model = joblib.load(full_path)
-        logger.info(f"Model loaded: {path}")
+        logger.info(f"Model loaded successfully: {path}")
+        _model_cache[path] = model
         return model
     except FileNotFoundError:
         logger.error(f"Model file NOT found: {full_path}")
+        _model_cache[path] = None
         return None
     except Exception as e:
         logger.error(f"Error loading model {path}: {e}")
+        _model_cache[path] = None
         return None
 
-crop_model           = load_model("models/crop_recommendation_model.pkl")
-fertilizer_model     = load_model("models/fertilizer_recommendation_model.pkl")
-le_crop_fert         = load_model("models/le_crop_fertilizer.pkl")
-le_soil_fert         = load_model("models/le_soil_fertilizer.pkl")
-yield_model          = load_model("models/yield_prediction_model.pkl")
-le_crop_yield        = load_model("models/le_crop_yield.pkl")
-le_season_yield      = load_model("models/le_season_yield.pkl")
-le_state_yield       = load_model("models/le_state_yield.pkl")
+# Lazy-loaded model getters (models load on first use, not on startup)
+def get_crop_model():
+    return load_model("models/crop_recommendation_model.pkl")
+
+def get_fertilizer_model():
+    return load_model("models/fertilizer_recommendation_model.pkl")
+
+def get_le_crop_fert():
+    return load_model("models/le_crop_fertilizer.pkl")
+
+def get_le_soil_fert():
+    return load_model("models/le_soil_fertilizer.pkl")
+
+def get_yield_model():
+    return load_model("models/yield_prediction_model.pkl")
+
+def get_le_crop_yield():
+    return load_model("models/le_crop_yield.pkl")
+
+def get_le_season_yield():
+    return load_model("models/le_season_yield.pkl")
+
+def get_le_state_yield():
+    return load_model("models/le_state_yield.pkl")
+
+logger.info("✓ Models will be loaded on-demand (lazy loading enabled)")
 
 # ================== HOME & PAGES ==================
+@app.route("/health")
+def health():
+    """Quick health check endpoint to verify app is running."""
+    return jsonify({
+        "status": "ok",
+        "models_loaded": {
+            "crop": get_crop_model() is not None,
+            "fertilizer": get_fertilizer_model() is not None,
+            "yield": get_yield_model() is not None
+        }
+    }), 200
+
 @app.route("/")
 @app.route("/index.html")
 def home():
@@ -94,7 +142,7 @@ def validate_range(value, min_val, max_val, name):
 # ================== CROP PREDICTION ==================
 @app.route("/predict_crop", methods=["POST"])
 def predict_crop():
-    if crop_model is None:
+    if get_crop_model() is None:
         logger.error("Crop model not loaded.")
         return render_template("crop.html", prediction="Model unavailable. Please contact admin.", error=True)
 
@@ -117,7 +165,7 @@ def predict_crop():
         validate_range(rain, 0,  5000, "Rainfall")
 
         input_data  = np.array([[N, P, K, temp, hum, ph, rain]])
-        prediction  = crop_model.predict(input_data)[0]
+        prediction  = get_crop_model().predict(input_data)[0]
 
         logger.info(f"Crop predicted: {prediction} | Inputs: N={N}, P={P}, K={K}, T={temp}, H={hum}, pH={ph}, R={rain}")
         return render_template("crop.html", prediction=prediction.capitalize())
@@ -132,7 +180,7 @@ def predict_crop():
 # ================== FERTILIZER PREDICTION ==================
 @app.route("/predict_fertilizer", methods=["POST"])
 def predict_fertilizer():
-    if fertilizer_model is None:
+    if get_fertilizer_model() is None:
         logger.error("Fertilizer model not loaded.")
         return render_template("fertilizer.html", fertilizer_res="Model unavailable. Please contact admin.", error=True)
 
@@ -156,15 +204,15 @@ def predict_fertilizer():
 
         # Encode categorical features if label encoders are loaded
         try:
-            soil_enc = le_soil_fert.transform([soil])[0] if le_soil_fert else soil
-            crop_enc = le_crop_fert.transform([crop])[0] if le_crop_fert else crop
+            soil_enc = get_le_soil_fert().transform([soil])[0] if get_le_soil_fert() else soil
+            crop_enc = get_le_crop_fert().transform([crop])[0] if get_le_crop_fert() else crop
         except ValueError as enc_err:
             logger.warning(f"Encoding error for fertilizer: {enc_err}")
             return render_template("fertilizer.html",
                                    fertilizer_res=f"Unknown crop or soil type: {enc_err}", error=True)
 
         input_arr = np.array([[temp, hum, moisture, soil_enc, crop_enc, N, K, P]])
-        raw_pred  = fertilizer_model.predict(input_arr)[0]
+        raw_pred  = get_fertilizer_model().predict(input_arr)[0]
 
         # Map numeric prediction to fertilizer name if needed
         FERTILIZER_NAMES = {
@@ -213,12 +261,12 @@ def predict_yield():
         validate_range(crop_year,    1900,   2100, "Crop Year")
 
         # --- Use trained yield model if available ---
-        if (yield_model is not None and le_crop_yield is not None
-                and le_state_yield is not None and le_season_yield is not None):
+        if (get_yield_model() is not None and get_le_crop_yield() is not None
+                and get_le_state_yield() is not None and get_le_season_yield() is not None):
             try:
-                crop_enc   = le_crop_yield.transform([crop])[0]
-                season_enc = le_season_yield.transform([season])[0]
-                state_enc  = le_state_yield.transform([state])[0]
+                crop_enc   = get_le_crop_yield().transform([crop])[0]
+                season_enc = get_le_season_yield().transform([season])[0]
+                state_enc  = get_le_state_yield().transform([state])[0]
 
                 # The model was trained with a Production column. Since users
                 # cannot know production in advance, we estimate it using the
@@ -233,7 +281,7 @@ def predict_yield():
                     area, estimated_production,
                     annual_rainfall, fertilizer, pesticide
                 ]])
-                prediction = round(float(yield_model.predict(input_arr)[0]), 2)
+                prediction = round(float(get_yield_model().predict(input_arr)[0]), 2)
                 logger.info(
                     f"Yield predicted (model): {prediction}"
                     f" | State={state}, Crop={crop}, Season={season}"
@@ -274,4 +322,7 @@ def _heuristic_yield(area, annual_rainfall, fertilizer):
 
 # ================== RUN APP ==================
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Use debug=False for production (faster), debug=True for development
+    # Set FLASK_DEBUG=1 environment variable to enable debug mode
+    debug_mode = os.getenv("FLASK_DEBUG", "0") == "1"
+    app.run(debug=debug_mode, threaded=True)
