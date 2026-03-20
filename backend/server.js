@@ -44,7 +44,14 @@ const UserSchema = new mongoose.Schema({
   phone: { type: String, default: "" },
   language: { type: String, default: "en" },
   landArea: { type: Number, default: 0 },
-  primaryCrop: { type: String, default: "" }
+  primaryCrop: { type: String, default: "" },
+  irrigationType: { type: String, default: "Tube Well" },
+  farmingStyle: { type: String, default: "Conventional" },
+  history: [{
+    analysisType: String,
+    result: String,
+    date: { type: Date, default: Date.now }
+  }]
 }, { timestamps: true });
 
 const User = mongoose.model("User", UserSchema);
@@ -144,7 +151,7 @@ app.get("/api/profile/:email", async (req, res) => {
 
 app.put("/api/profile", async (req, res) => {
   try {
-    const { email, name, phone, language, region, landArea, soil, primaryCrop } = req.body;
+    const { email, name, phone, language, region, landArea, soil, primaryCrop, irrigationType, farmingStyle } = req.body;
     
     if (!email) {
       return res.status(400).json({ success: false, message: "Email is required to update profile" });
@@ -152,7 +159,7 @@ app.put("/api/profile", async (req, res) => {
 
     const updatedUser = await User.findOneAndUpdate(
       { email },
-      { name, phone, language, region, landArea, soil, primaryCrop },
+      { name, phone, language, region, landArea, soil, primaryCrop, irrigationType, farmingStyle },
       { new: true }
     ).select("-password");
 
@@ -163,6 +170,28 @@ app.put("/api/profile", async (req, res) => {
     res.json({ success: true, message: "Profile updated successfully", user: updatedUser });
   } catch (error) {
     console.error("Update profile error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// ================= HISTORY Endpoints =================
+app.post("/api/history", async (req, res) => {
+  try {
+    const { email, analysisType, result } = req.body;
+    if (!email || !analysisType || !result) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+    const user = await User.findOneAndUpdate(
+      { email },
+      { $push: { history: { analysisType, result, date: new Date() } } },
+      { new: true }
+    );
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    res.json({ success: true, message: "History saved successfully" });
+  } catch (error) {
+    console.error("Save history error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });

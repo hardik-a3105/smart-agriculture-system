@@ -259,6 +259,20 @@
                     <h2 class="result-text mb-0">{{ prediction }}</h2>
                 </div>
             </div>
+            {% if not error %}
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const email = localStorage.getItem('farmerEmail');
+                    if (email) {
+                        fetch('http://localhost:3000/api/history', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: email, analysisType: 'Crop Recommendation', result: '{{ prediction }}' })
+                        }).catch(e => console.error("History sync failed", e));
+                    }
+                });
+            </script>
+            {% endif %}
             {% endif %}
 
             <form action="/predict_crop" method="POST" id="cropForm">

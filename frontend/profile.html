@@ -273,6 +273,21 @@
 
                         <label class="form-label">Primary Crop Focus</label>
                         <input type="text" id="form-primaryCrop" class="form-control" value="Cotton, Wheat">
+
+                        <label class="form-label">Irrigation Type</label>
+                        <select class="form-select" id="form-irrigationType">
+                            <option value="Tube Well">Tube Well</option>
+                            <option value="Canal">Canal</option>
+                            <option value="Drip">Drip Irrigation</option>
+                            <option value="Sprinkler">Sprinkler</option>
+                        </select>
+                        
+                        <label class="form-label">Farming Style</label>
+                        <select class="form-select" id="form-farmingStyle">
+                            <option value="Conventional">Conventional</option>
+                            <option value="Organic">Organic</option>
+                            <option value="Mixed">Mixed</option>
+                        </select>
                     </div>
                 </div>
 
@@ -319,6 +334,8 @@
                         if (document.getElementById('form-landArea')) document.getElementById('form-landArea').value = user.landArea || '';
                         if (document.getElementById('form-soil')) document.getElementById('form-soil').value = user.soil || '';
                         if (document.getElementById('form-primaryCrop')) document.getElementById('form-primaryCrop').value = user.primaryCrop || '';
+                        if (document.getElementById('form-irrigationType')) document.getElementById('form-irrigationType').value = user.irrigationType || 'Tube Well';
+                        if (document.getElementById('form-farmingStyle')) document.getElementById('form-farmingStyle').value = user.farmingStyle || 'Conventional';
                         
                         // Sync localStorage
                         localStorage.setItem('farmerName', user.name);
@@ -364,6 +381,8 @@
             const landArea = document.getElementById('form-landArea') ? parseFloat(document.getElementById('form-landArea').value) : 0;
             const soil = document.getElementById('form-soil') ? document.getElementById('form-soil').value : '';
             const primaryCrop = document.getElementById('form-primaryCrop') ? document.getElementById('form-primaryCrop').value.trim() : '';
+            const irrigationType = document.getElementById('form-irrigationType') ? document.getElementById('form-irrigationType').value : 'Tube Well';
+            const farmingStyle = document.getElementById('form-farmingStyle') ? document.getElementById('form-farmingStyle').value : 'Conventional';
 
             const saveBtn = event.target.querySelector('button[type="submit"]');
             const originalText = saveBtn ? saveBtn.innerHTML : '';
@@ -376,7 +395,7 @@
                 const response = await fetch("http://localhost:3000/api/profile", {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email, name, phone, language, region, landArea, soil, primaryCrop })
+                    body: JSON.stringify({ email, name, phone, language, region, landArea, soil, primaryCrop, irrigationType, farmingStyle })
                 });
 
                 const data = await response.json();

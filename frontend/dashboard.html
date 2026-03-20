@@ -298,7 +298,7 @@
                 <div class="stat-card">
                     <span class="stat-icon" style="color: var(--accent-blue);"><i
                             class="bi bi-clipboard2-check"></i></span>
-                    <div class="stat-value">28</div>
+                    <div class="stat-value" id="stat-field-tests">0</div>
                     <div class="stat-label">Total Field Tests</div>
                 </div>
             </div>
@@ -312,7 +312,7 @@
             <div class="col-6 col-lg-3">
                 <div class="stat-card">
                     <span class="stat-icon" style="color: #6c5ce7;"><i class="bi bi-graph-up"></i></span>
-                    <div class="stat-value">₹ 1.2M</div>
+                    <div class="stat-value" id="stat-revenue">₹ 0</div>
                     <div class="stat-label">Estimated Revenue</div>
                 </div>
             </div>
@@ -334,6 +334,10 @@
                                 class="profile-value" id="dash-landArea">12.5 Hectares</span></div>
                         <div class="profile-item"><span class="profile-label">Primary Crop</span><span
                                 class="profile-value" id="dash-primaryCrop">Cotton / Wheat</span></div>
+                        <div class="profile-item"><span class="profile-label">Irrigation</span><span
+                                class="profile-value" id="dash-irrigationType">Tube Well</span></div>
+                        <div class="profile-item"><span class="profile-label">Farming Style</span><span
+                                class="profile-value" id="dash-farmingStyle">Conventional</span></div>
                         <div class="profile-item"><span class="profile-label">Member Since</span><span
                                 class="profile-value" id="dash-memberSince">Oct 2024</span></div>
                     </div>
@@ -361,29 +365,8 @@
                                     <th>Result</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Jan 23, 2026</td>
-                                    <td><i class="bi bi-tree me-2"></i>Crop Recommendation</td>
-                                    <td>High (94%)</td>
-                                    <td><span class="badge-status bg-success bg-opacity-10 text-success">Rice
-                                            (Paddy)</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Jan 20, 2026</td>
-                                    <td><i class="bi bi-graph-up-arrow me-2"></i>Yield Forecasting</td>
-                                    <td>Med (88%)</td>
-                                    <td><span class="badge-status bg-primary bg-opacity-10 text-primary">4.2
-                                            Tons/Ha</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Jan 15, 2026</td>
-                                    <td><i class="bi bi-flask me-2"></i>Fertilizer Advisory</td>
-                                    <td>High (96%)</td>
-                                    <td><span
-                                            class="badge-status bg-warning bg-opacity-10 text-warning text-dark">Potash
-                                            40kg</span></td>
-                                </tr>
+                            <tbody id="history-table-body">
+                                <tr><td colspan="4" class="text-center text-muted">Loading history...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -422,6 +405,8 @@
                     document.getElementById('dash-soil').innerText = user.soil || 'Not Set';
                     document.getElementById('dash-landArea').innerText = user.landArea ? `${user.landArea} Hectares` : 'Not Set';
                     document.getElementById('dash-primaryCrop').innerText = user.primaryCrop || 'Not Set';
+                    document.getElementById('dash-irrigationType').innerText = user.irrigationType || 'Not Set';
+                    document.getElementById('dash-farmingStyle').innerText = user.farmingStyle || 'Not Set';
                     
                     if (user.createdAt) {
                         const date = new Date(user.createdAt);
@@ -430,6 +415,42 @@
                     } else {
                         document.getElementById('dash-memberSince').innerText = 'Recent';
                     }
+
+                    // Populate History Table
+                    const historyTbody = document.getElementById('history-table-body');
+                    if (user.history && user.history.length > 0) {
+                        historyTbody.innerHTML = '';
+                        // Sort by date desc and take top 5
+                        const recentHistory = user.history.sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+                        recentHistory.forEach(item => {
+                            const d = new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                            let icon = 'bi-tree';
+                            let colorClass = 'bg-success bg-opacity-10 text-success';
+                            if (item.analysisType.includes('Yield')) {
+                                icon = 'bi-graph-up-arrow';
+                                colorClass = 'bg-primary bg-opacity-10 text-primary';
+                            } else if (item.analysisType.includes('Fertilizer')) {
+                                icon = 'bi-flask';
+                                colorClass = 'bg-warning bg-opacity-10 text-warning text-dark';
+                            }
+                            historyTbody.innerHTML += `
+                                <tr>
+                                    <td>${d}</td>
+                                    <td><i class="bi ${icon} me-2"></i>${item.analysisType}</td>
+                                    <td>Dynamic AI</td>
+                                    <td><span class="badge-status ${colorClass}">${item.result}</span></td>
+                                </tr>
+                            `;
+                        });
+                        document.getElementById('stat-field-tests').innerText = user.history.length;
+                    } else {
+                        historyTbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No history found. Run a prediction to get started!</td></tr>';
+                        document.getElementById('stat-field-tests').innerText = '0';
+                    }
+
+                    // Dynamic Revenue
+                    const revAmount = user.landArea ? (user.landArea * 85000) : 0;
+                    document.getElementById('stat-revenue').innerText = revAmount > 0 ? "₹ " + revAmount.toLocaleString() : "Set Land Area";
 
                     // Sync localStorage
                     localStorage.setItem('farmerName', user.name);
@@ -450,6 +471,8 @@
                 document.getElementById('dash-soil').innerText = soil;
                 document.getElementById('dash-landArea').innerText = 'Offline';
                 document.getElementById('dash-primaryCrop').innerText = 'Offline';
+                document.getElementById('dash-irrigationType').innerText = 'Offline';
+                document.getElementById('dash-farmingStyle').innerText = 'Offline';
                 document.getElementById('dash-memberSince').innerText = '--';
                 console.log(`System initialized offline for: ${name}`);
             }
