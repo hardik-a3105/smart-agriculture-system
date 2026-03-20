@@ -1,0 +1,29 @@
+{
+  "name": "smart-agri-system",
+  "version": "1.0.0",
+  "description": "Smart Harvest is a Machine Learning–based smart agriculture system designed to assist farmers in making **data-driven decisions**.  \r The system provides **crop recommendation**, **fertilizer recommendation**, and **crop yield prediction** based on soil parameters, weather conditions, and historical agricultural data.\r This project focuses on applying ML algorithms to real-world agricultural problems, making farming smarter, more efficient, and sustainable.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hardik-a3105/smart-agriculture-system.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/hardik-a3105/smart-agriculture-system/issues"
+  },
+  "homepage": "https://github.com/hardik-a3105/smart-agriculture-system#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "body-parser": "^2.2.2",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "mongoose": "^9.2.1"
+  }
+}
