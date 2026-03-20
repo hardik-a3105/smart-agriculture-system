@@ -213,6 +213,29 @@
             text-align: center;
             margin-top: 60px;
         }
+
+        /* Custom Language Dropdown */
+        .lang-dropdown {
+            background-color: white;
+            border: 1px solid #ddd;
+            color: #1e272e;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+            cursor: pointer;
+            outline: none;
+            appearance: auto;
+        }
+
+        .lang-dropdown:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Hide Google Translate bar */
+        .goog-te-banner-frame, .goog-te-balloon-frame, #goog-gt-tt, .goog-te-gadget, .goog-te-combo { display: none !important; }
+        body { top: 0 !important; }
     </style>
 </head>
 
@@ -239,6 +262,13 @@
                     <li class="nav-item ms-lg-4">
                         <button onclick="handleLogout()" class="btn btn-outline-light rounded-pill px-4 btn-sm">Sign
                             Out</button>
+                    </li>
+                    <li class="nav-item ms-lg-2">
+                        <select class="lang-dropdown" id="langSelect" onchange="changeLanguage(this.value)">
+                            <option value="en">English</option>
+                            <option value="hi">Hindi</option>
+                            <option value="gu">Gujarati</option>
+                        </select>
                     </li>
                 </ul>
             </div>
@@ -299,10 +329,10 @@
                         <a href="profile.html" class="text-white opacity-50"><i class="bi bi-pencil-square"></i></a>
                     </div>
                     <div class="mt-2">
-                        <div class="profile-item"><span class="profile-label">District</span><span
-                                class="profile-value">Vadodara, Gujarat</span></div>
+                        <div class="profile-item"><span class="profile-label">District</span><span class="profile-value"
+                                id="dash-region">Vadodara, Gujarat</span></div>
                         <div class="profile-item"><span class="profile-label">Soil Profile</span><span
-                                class="profile-value">Black Soil (Clayey)</span></div>
+                                class="profile-value" id="dash-soil">Black Soil (Clayey)</span></div>
                         <div class="profile-item"><span class="profile-label">Land Area</span><span
                                 class="profile-value">12.5 Hectares</span></div>
                         <div class="profile-item"><span class="profile-label">Primary Crop</span><span
@@ -384,9 +414,13 @@
             const today = new Date();
             document.getElementById('live-date').innerText = today.toLocaleDateString('en-US', options);
 
-            // 3. Dynamic Profile Update Simulation
-            // In a real app, this would fetch from a database. 
-            // We use the stored name for basic personalization.
+            // 3. Dynamic Profile Update
+            const region = localStorage.getItem('farmerRegion') || 'Not Set';
+            const soil = localStorage.getItem('farmerSoil') || 'Not Set';
+
+            document.getElementById('dash-region').innerText = region;
+            document.getElementById('dash-soil').innerText = soil;
+
             console.log(`System initialized for: ${name}`);
         });
 
@@ -398,6 +432,8 @@
             }
         }
     </script>
+    <div id="google_translate_element" style="display:none;"></div>
+    <script src="translate.js"></script>
 </body>
 
 </html>

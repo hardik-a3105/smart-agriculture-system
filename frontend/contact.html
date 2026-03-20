@@ -150,6 +150,29 @@
             padding: 40px 0;
             text-align: center;
         }
+
+        /* Custom Language Dropdown */
+        .lang-dropdown {
+            background-color: white;
+            border: 1px solid #ddd;
+            color: #1e272e;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+            cursor: pointer;
+            outline: none;
+            appearance: auto;
+        }
+
+        .lang-dropdown:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Hide Google Translate bar */
+        .goog-te-banner-frame, .goog-te-balloon-frame, #goog-gt-tt, .goog-te-gadget, .goog-te-combo { display: none !important; }
+        body { top: 0 !important; }
     </style>
 </head>
 
@@ -167,6 +190,13 @@
                     <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
                     <li class="nav-item"><a class="nav-link" href="help.html">Help Center</a></li>
                     <li class="nav-item"><a class="nav-link active" href="contact.html">Contact</a></li>
+                    <li class="nav-item ms-lg-2">
+                        <select class="lang-dropdown" id="langSelect" onchange="changeLanguage(this.value)">
+                            <option value="en">English</option>
+                            <option value="hi">Hindi</option>
+                            <option value="gu">Gujarati</option>
+                        </select>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -175,8 +205,7 @@
     <header class="contact-header">
         <div class="container animate__animated animate__fadeIn">
             <h1 class="fw-bold mb-3">Get in Touch</h1>
-            <p class="lead opacity-75">Have questions about our AI models? We're here to support your farming journey.
-            </p>
+            <p class="lead opacity-75">Have questions about Smart Harvest? We are here to help.</p>
         </div>
     </header>
 
@@ -193,7 +222,7 @@
                             <div class="info-icon"><i class="bi bi-geo-alt"></i></div>
                             <div>
                                 <h6 class="fw-bold mb-1">Our Location</h6>
-                                <p class="small mb-0 opacity-75">Vadodara, Gujarat & Ranchi, Jharkhand</p>
+                                <p class="small mb-0 opacity-75">Vadodara, Ahmedabad</p>
                             </div>
                         </div>
 
@@ -201,7 +230,7 @@
                             <div class="info-icon"><i class="bi bi-telephone"></i></div>
                             <div>
                                 <h6 class="fw-bold mb-1">Helpline</h6>
-                                <p class="small mb-0 opacity-75">+91 1800-HARVEST</p>
+                                <p class="small mb-0 opacity-75">+91 1800-0000-0000</p>
                             </div>
                         </div>
 
@@ -230,16 +259,16 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <label class="form-label">First Name</label>
-                                    <input type="text" class="form-control" placeholder="John" required>
+                                    <input type="text" class="form-control" placeholder="First Name" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Last Name</label>
-                                    <input type="text" class="form-control" placeholder="Doe" required>
+                                    <input type="text" class="form-control" placeholder="Last Name" required>
                                 </div>
                             </div>
 
                             <label class="form-label">Email Address</label>
-                            <input type="email" class="form-control" placeholder="john@example.com" required>
+                            <input type="email" class="form-control" placeholder="you@example.com" required>
 
                             <label class="form-label">Inquiry Type</label>
                             <select class="form-select">
@@ -291,6 +320,8 @@
             }, 600);
         }
     </script>
+    <div id="google_translate_element" style="display:none;"></div>
+    <script src="translate.js"></script>
 </body>
 
 </html>

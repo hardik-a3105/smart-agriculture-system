@@ -85,12 +85,42 @@
             margin-top: 15px;
             min-height: 1.2rem;
         }
+
+        /* Custom Language Dropdown */
+        .lang-dropdown {
+            background-color: white;
+            border: 1px solid #ddd;
+            color: #1e272e;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+            cursor: pointer;
+            outline: none;
+            appearance: auto;
+        }
+
+        .lang-dropdown:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Hide Google Translate bar */
+        .goog-te-banner-frame, .goog-te-balloon-frame, #goog-gt-tt, .goog-te-gadget, .goog-te-combo { display: none !important; }
+        body { top: 0 !important; }
     </style>
 </head>
 
 <body>
     <div class="access-card animate__animated animate__fadeInDown">
         <a href="index.html" class="card-logo">🌾 Smart<span>Harvest</span></a>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <select class="lang-dropdown" id="langSelect" onchange="changeLanguage(this.value)">
+                <option value="en">English</option>
+                <option value="hi">Hindi</option>
+                <option value="gu">Gujarati</option>
+            </select>
+        </div>
         <h4 class="fw-bold mb-4 text-center">Farmer Login</h4>
 
         <form id="loginForm">
@@ -170,6 +200,8 @@
             }
         });
     </script>
+    <div id="google_translate_element" style="display:none;"></div>
+    <script src="translate.js"></script>
 </body>
 
 </html>
