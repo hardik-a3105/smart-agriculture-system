@@ -12,7 +12,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__, template_folder='frontend')
+app = Flask(__name__, template_folder='frontend', static_folder='frontend', static_url_path='')
 
 # ================== LOAD MODELS ==================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

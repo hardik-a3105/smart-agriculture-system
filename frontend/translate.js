@@ -10,18 +10,21 @@
 
 // 2. Change language: set cookie and trigger Google Translate
 function changeLanguage(lang) {
-    var domain = window.location.hostname;
+    var hostname = window.location.hostname;
+    // Do not set domain for localhost to avoid browser cookie rejection
+    var domainStr = (hostname === 'localhost' || hostname === '127.0.0.1') ? '' : '; domain=' + hostname;
+    var subDomainStr = (hostname === 'localhost' || hostname === '127.0.0.1') ? '' : '; domain=.' + hostname;
 
     if (lang === 'en') {
         // Clear translation cookies
-        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + domain + ';';
-        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.' + domain + ';';
+        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+        if (domainStr) document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/' + domainStr;
+        if (subDomainStr) document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/' + subDomainStr;
     } else {
         // Set translation cookies
-        document.cookie = 'googtrans=/en/' + lang + '; path=/;';
-        document.cookie = 'googtrans=/en/' + lang + '; path=/; domain=' + domain + ';';
-        document.cookie = 'googtrans=/en/' + lang + '; path=/; domain=.' + domain + ';';
+        document.cookie = 'googtrans=/en/' + lang + '; path=/';
+        if (domainStr) document.cookie = 'googtrans=/en/' + lang + '; path=/' + domainStr;
+        if (subDomainStr) document.cookie = 'googtrans=/en/' + lang + '; path=/' + subDomainStr;
     }
 
     // Try programmatic trigger first, fallback to reload
@@ -51,6 +54,6 @@ function googleTranslateElementInit() {
 (function () {
     var s = document.createElement('script');
     s.type = 'text/javascript';
-    s.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+    s.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
     document.body.appendChild(s);
 })();
