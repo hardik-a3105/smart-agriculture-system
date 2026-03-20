@@ -20,6 +20,7 @@ app = Flask(__name__, template_folder='frontend', static_folder='frontend', stat
 # Disable auto-reloading of template files in production for faster performance
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000  # Cache static files for 1 year
 app.jinja_env.cache = {}  # Use Jinja2 cache
+app.config['JSON_SORT_KEYS'] = False  # Don't sort JSON keys
 
 # ================== LOAD MODELS ==================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -322,7 +323,9 @@ def _heuristic_yield(area, annual_rainfall, fertilizer):
 
 # ================== RUN APP ==================
 if __name__ == "__main__":
+    # Get port from environment variable (Render/deployed) or default to 5000
+    port = int(os.getenv("PORT", 5000))
     # Use debug=False for production (faster), debug=True for development
-    # Set FLASK_DEBUG=1 environment variable to enable debug mode
     debug_mode = os.getenv("FLASK_DEBUG", "0") == "1"
-    app.run(debug=debug_mode, threaded=True)
+    # Disable threaded mode in production with Gunicorn
+    app.run(host="0.0.0.0", port=port, debug=debug_mode, threaded=not os.getenv("WERKZEUG_RUN_MAIN"))
