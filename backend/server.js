@@ -4,11 +4,20 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const cors = require("cors");
 const dns = require("dns");
+const { createProxyMiddleware } = require("http-proxy-middleware");
 
 // 🔧 Force Google DNS to resolve MongoDB Atlas SRV records
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const app = express();
+
+// 🚀 Proxy Machine Learning endpoints directly to the Python Render Service
+const pythonApiUrl = process.env.PYTHON_API_URL || "https://smart-agriculture-system-u0tq.onrender.com";
+app.use(['/predict_crop', '/predict_fertilizer', '/predict_yield'], createProxyMiddleware({
+  target: pythonApiUrl,
+  changeOrigin: true,
+}));
+
 app.use(express.json());
 app.use(cors());
 app.use(express.static("frontend"));
@@ -152,7 +161,7 @@ app.get("/api/profile/:email", async (req, res) => {
 app.put("/api/profile", async (req, res) => {
   try {
     const { email, name, phone, language, region, landArea, soil, primaryCrop, irrigationType, farmingStyle } = req.body;
-    
+
     if (!email) {
       return res.status(400).json({ success: false, message: "Email is required to update profile" });
     }
