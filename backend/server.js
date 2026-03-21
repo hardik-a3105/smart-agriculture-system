@@ -12,7 +12,7 @@ dns.setServers(["8.8.8.8", "8.8.4.4"]);
 const app = express();
 
 // 🚀 Proxy Machine Learning endpoints directly to the Python Render Service
-const pythonApiUrl = process.env.PYTHON_API_URL || "https://smart-agriculture-system-u0tq.onrender.com";
+const pythonApiUrl = process.env.PYTHON_API_URL || "https://smart-agriculture-system-bir3.onrender.com";
 app.use(['/predict_crop', '/predict_fertilizer', '/predict_yield'], createProxyMiddleware({
   target: pythonApiUrl,
   changeOrigin: true,
