@@ -215,3 +215,9 @@ yarn-error.log*
 # OS specific
 .DS_Store
 Thumbs.db
+
+# ML Models (large binary files)
+models/*.pkl
+
+# Data files
+data/*.csv

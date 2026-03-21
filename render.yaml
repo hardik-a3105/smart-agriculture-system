@@ -26,8 +26,6 @@ services:
     
     envVars:
       - key: MONGODB_URI
-        fromDatabase:
-          name: smart-agri-db
-          property: connectionString
+        sync: false
       - key: NODE_ENV
         value: production

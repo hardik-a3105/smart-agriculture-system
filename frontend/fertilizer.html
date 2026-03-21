@@ -259,7 +259,7 @@
                 document.addEventListener('DOMContentLoaded', function() {
                     const email = localStorage.getItem('farmerEmail');
                     if (email) {
-                        fetch('http://localhost:3000/api/history', {
+                        fetch('/api/history', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ email: email, analysisType: 'Fertilizer Advisory', result: '{{ fertilizer_res }}' })

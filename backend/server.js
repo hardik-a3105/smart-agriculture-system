@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ path: require("path").resolve(__dirname, "../.env") });
 const express = require("express");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
@@ -131,7 +131,7 @@ app.post("/register", async (req, res) => {
     res.status(201).json({ success: true, message: "Registration successful ✅" });
   } catch (error) {
     console.error("Registration error:", error);
-    res.status(500).json({ success: false, message: "Server error. Please try again.", error: error.message, stack: error.stack });
+    res.status(500).json({ success: false, message: "Server error. Please try again." });
   }
 });
 

@@ -2,7 +2,7 @@
   "name": "smart-agri-system",
   "version": "1.0.0",
   "description": "Smart Harvest is a Machine Learning–based smart agriculture system designed to assist farmers in making **data-driven decisions**.  \r The system provides **crop recommendation**, **fertilizer recommendation**, and **crop yield prediction** based on soil parameters, weather conditions, and historical agricultural data.\r This project focuses on applying ML algorithms to real-world agricultural problems, making farming smarter, more efficient, and sustainable.",
-  "main": "index.js",
+  "main": "backend/server.js",
   "scripts": {
     "start": "node backend/server.js",
     "dev": "node backend/server.js",
