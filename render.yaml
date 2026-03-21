@@ -14,3 +14,20 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.7
+
+  - type: web
+    name: smart-agri-nodejs
+    env: node
+    plan: free
+    runtime: node-18
+    
+    buildCommand: npm install
+    startCommand: node backend/server.js
+    
+    envVars:
+      - key: MONGODB_URI
+        fromDatabase:
+          name: smart-agri-db
+          property: connectionString
+      - key: NODE_ENV
+        value: production
