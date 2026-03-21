@@ -9,9 +9,18 @@
 
 ## 📖 Overview
 
-**Smart Harvest** is a full-stack, AI-driven agricultural advisory platform built for the **Smart India Hackathon (SIH)**. It empowers farmers in **Gujarat, Jharkhand, and Maharashtra** to make informed, data-backed farming decisions using Machine Learning models trained on real agricultural datasets.
+**Smart Harvest** is a full-stack, AI-driven agricultural advisory platform built to empower farmers to make informed, data-backed farming decisions using Machine Learning models trained on real agricultural datasets. 
 
-The system offers three core AI advisors — crop recommendation, fertilizer recommendation, and yield estimation — all accessible through a modern, mobile-friendly web interface with user authentication.
+The system offers three core AI advisors — **Crop Recommendation**, **Fertilizer Recommendation**, and **Yield Estimation** — all accessible through a modern, mobile-friendly web interface with user authentication and a dynamic history-tracking dashboard.
+
+---
+
+## 🏛️ Architecture
+
+Smart Harvest utilizes a **Dual-Backend Microservice Architecture** for optimal performance and pure separation of concerns:
+
+1. **Node.js Auth & Frontend Server**: Handles secure user registration, login, profile management, and serves the static frontend files.
+2. **Python Flask Machine Learning API**: A pure REST API serving predictions via `joblib` serialized scikit-learn models. Cross-Origin Resource Sharing (CORS) is explicitly configured to allow the frontend to securely interact with the ML API.
 
 ---
 
@@ -19,13 +28,14 @@ The system offers three core AI advisors — crop recommendation, fertilizer rec
 
 | Feature | Description |
 |---|---|
-| � **Crop Recommendation** | Suggests the optimal crop based on soil NPK levels, temperature, humidity, pH, and rainfall |
-| 🧪 **Fertilizer Recommendation** | Recommends fertilizer type based on soil health, moisture, and crop type |
-| � **Yield Prediction** | Forecasts expected production (Tons/Hectare) using weather, irrigation, and management inputs |
-| 🔐 **User Authentication** | Secure farmer registration & login with bcrypt password hashing + MongoDB storage |
-| 📊 **Farmer Dashboard** | Personalised dashboard showing farm profile, quick stats, and recent activity |
-| 👤 **Profile Management** | View and update personal and farm details |
-| 📱 **Responsive UI** | Bootstrap 5 + Poppins typography — works on mobile, tablet, and desktop |
+| 🌾 **Crop Recommendation** | Suggests optimal crops based on soil NPK levels, temperature, humidity, pH, and rainfall. |
+| 🧪 **Fertilizer Recommendation** | Recommends fertilizer type based on soil health, moisture, and crop type. |
+| 📈 **Yield Prediction** | Forecasts expected production (Tons/Hectare) using weather, irrigation, and management inputs. |
+| ⚡ **Asynchronous AI** | Real-time JS `fetch` integration with loading spinners for seamless user experience without page reloads. |
+| 🔐 **User Authentication** | Secure farmer registration & login with bcrypt password hashing + MongoDB storage. |
+| 📊 **Dynamic Dashboard** | Personalised dashboard showing farm profile, dynamic estimated revenue, and trackable prediction history. |
+| 📝 **History Management** | "View All" and "Clear History" capabilities to manage past AI predictions. |
+| 📱 **Responsive UI** | Beautiful Glassmorphism UI using Bootstrap 5 + Poppins typography — works on mobile, tablet, and desktop. |
 
 ---
 
@@ -35,9 +45,9 @@ The system offers three core AI advisors — crop recommendation, fertilizer rec
 |---|---|---|
 | Crop Recommendation | Random Forest **Classifier** | Crop name (e.g. Rice, Wheat, Cotton) |
 | Fertilizer Recommendation | Random Forest **Classifier** | Fertilizer name (e.g. Urea, DAP, 17-17-17) |
-| Yield Prediction | Random Forest **Regressor** | Yield in Tons/Hectare |
+| Yield Prediction | Random Forest **Regressor** | Expected Yield Production in Tons |
 
-All models are trained in Jupyter notebooks, serialized with `joblib`, and served via a Flask REST API.
+All models are trained in Jupyter notebooks, serialized with `joblib`, and served via the Flask REST API.
 
 ---
 
@@ -46,75 +56,53 @@ All models are trained in Jupyter notebooks, serialized with `joblib`, and serve
 ```
 Smart Agri-system/
 │
-├── app.py                        # Flask application — ML prediction routes
+├── app.py                        # Python Model API — ML prediction routes (Port 5000)
 │
 ├── backend/
-│   └── server.js                 # Node.js + Express — auth API (login/register)
+│   └── server.js                 # Node.js Auth/Frontend Server (Port 3000)
 │
-├── frontend/                     # All HTML pages
+├── frontend/                     # Static HTML, CSS, JS Frontend Assets
 │   ├── index.html                # Landing page
+│   ├── dashboard.html            # Farmer Dashboard with History Module
 │   ├── crop.html                 # Crop Recommendation UI
 │   ├── fertilizer.html           # Fertilizer Recommendation UI
 │   ├── yield.html                # Yield Prediction UI
-│   ├── dashboard.html            # Farmer Dashboard
-│   ├── profile.html              # Profile Management
-│   ├── login.html                # Login Page
-│   ├── register.html             # Registration Page
-│   ├── about.html                # About the Project
-│   ├── help.html                 # Help & FAQ
-│   └── contact.html              # Contact Support
+│   ├── ...                       # Other pages (Login, Register, Profile, etc.)
 │
 ├── models/                       # Trained ML model files (.pkl)
-│   ├── crop_recommendation_model.pkl
-│   ├── fertilizer_recommendation_model.pkl
-│   ├── le_crop_fertilizer.pkl
-│   ├── le_soil_fertilizer.pkl
-│   ├── yield_prediction_model.pkl
-│   ├── le_crop_yield.pkl
-│   ├── le_season_yield.pkl
-│   └── le_state_yield.pkl
 │
-├── data/                         # Source datasets (CSV)
-│   ├── Crop_recommendation.csv
-│   ├── Fertilizer_Prediction.csv
-│   └── yield_data.csv
+├── data/                         # Source datasets (CSV) for Jupyter training
 │
-├── notebooks/                    # Model training notebooks
-│   ├── crop_recommendatiom.ipynb
-│   ├── fertilizer_recommendation.ipynb
-│   └── yield_prediction.ipynb
+├── notebooks/                    # Jupyter notebooks for model training pipelines
 │
-├── .env                          # Environment variables (not committed)
+├── render.yaml                   # Infrastructure as Code (IaC) deployment script for Render.com
+├── .env                          # Environment variables (MongoDB UI, Ports)
 ├── package.json                  # Node.js dependencies
-├── requirements.txt              # Python dependencies
-└── README.md
+└── requirements.txt              # Python dependencies (Flask, scikit-learn, Flask-CORS)
 ```
 
 ---
 
 ## ⚙️ Tech Stack
 
-**Machine Learning & Backend (Python)**
-- `Flask` — REST API for ML predictions
+**Machine Learning API (Python)**
+- `Flask` & `Flask-CORS` — REST API
 - `scikit-learn` — Random Forest models
 - `NumPy` & `Pandas` — Data processing
-- `Joblib` — Model serialization
 
-**Backend (Node.js)**
-- `Express.js` — Auth API server
+**Auth & Frontend Server (Node.js)**
+- `Express.js` — Auth & static asset server
 - `Mongoose` — MongoDB ODM
 - `bcryptjs` — Password hashing
-- `CORS`, `dotenv`
 
 **Frontend**
-- `HTML5`, `Vanilla CSS`, `JavaScript`
-- `Bootstrap 5.3`
-- `Bootstrap Icons`
+- `Vanilla JS`, `HTML5`, `CSS3`
+- `Bootstrap 5.3` & `Bootstrap Icons`
 - `Animate.css`
-- `Google Fonts (Poppins)`
 
-**Database**
-- `MongoDB Atlas` — Cloud-hosted user data
+**Database & Deployment**
+- `MongoDB Atlas` — Cloud-hosted user data & history
+- `Render.com` — Cloud Application Hosting (via `render.yaml`)
 
 ---
 
@@ -137,16 +125,14 @@ cd smart-agriculture-system
 
 ---
 
-### 2. Python Environment Setup (Flask + ML Models)
+### 2. Python Environment Setup (ML API)
 
 ```bash
 # Create and activate a virtual environment
 python -m venv .venv
-
-# Windows
+# Windows:
 .venv\Scripts\activate
-
-# macOS / Linux
+# macOS / Linux:
 source .venv/bin/activate
 
 # Install Python dependencies
@@ -155,7 +141,7 @@ pip install -r requirements.txt
 
 ---
 
-### 3. Node.js Setup (Auth Server)
+### 3. Node.js Setup (Auth Server / Frontend Loader)
 
 ```bash
 npm install
@@ -172,66 +158,37 @@ MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/smartagri
 NODE_ENV=development
 PORT=3000
 ```
+*(Update the MongoDB URI with your valid Atlas connection string)*
 
 ---
 
-### 5. Train the Models (if .pkl files are missing)
+### 5. Run the Application
 
-Open and run each notebook in order:
+The system requires both backend servers running simultaneously.
 
-```
-notebooks/crop_recommendatiom.ipynb
-notebooks/fertilizer_recommendation.ipynb
-notebooks/yield_prediction.ipynb
-```
-
-This will generate all `.pkl` files inside the `models/` directory.
-
----
-
-### 6. Run the Application
-
-**Terminal 1 — Flask (ML API, port 5000):**
+**Terminal 1 — Flask (ML API):**
 ```bash
 python app.py
+# Runs on Port 5000 by default
 ```
 
-**Terminal 2 — Node.js (Auth API, port 3000):**
+**Terminal 2 — Node.js (Auth/Frontend API):**
 ```bash
 node backend/server.js
+# Runs on Port 3000 by default
 ```
 
-Then open your browser at: **[http://localhost:5000](http://localhost:5000)**
+Open your browser to: **[http://localhost:3000](http://localhost:3000)**
 
 ---
 
-## 📥 Input Features Guide
+## ☁️ Deployment (Render)
 
-### 🌱 Crop Recommendation
+This repository includes a `render.yaml` Blueprint file mapped to automatically deploy two separate services to Render.com:
+1. **Node.js Web Service**: Hosts the frontend assets and authorization API.
+2. **Python Web Service**: Hosts the Machine Learning API.
 
-| Parameter | Range | Unit |
-|---|---|---|
-| Nitrogen (N) | 0 – 140 | kg/ha |
-| Phosphorus (P) | 5 – 145 | kg/ha |
-| Potassium (K) | 5 – 205 | kg/ha |
-| Temperature | 0 – 50 | °C |
-| Humidity | 0 – 100 | % |
-| Soil pH | 0 – 14 | — |
-| Rainfall | 0 – 5000 | mm |
-
-### 🧪 Fertilizer Recommendation
-
-Soil Type, Crop Type, NPK levels, Temperature, Humidity, Soil Moisture
-
-### 📈 Yield Prediction
-
-Region, Crop, Soil Type, Rainfall, Temperature, Weather Condition, Fertilizer & Irrigation usage, Days to Harvest
-
----
-
-## 📸 Screenshots
-
-> _Coming soon — live deployment screenshots_
+To deploy, simply link your GitHub repository to your Render Dashboard and apply the `render.yaml` Blueprint block.
 
 ---
 
@@ -253,12 +210,8 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 ---
 
-## ⭐ Support
-
-If Smart Harvest helped you or you found it interesting, please consider giving it a **⭐ star** on GitHub — it helps others discover the project!
-
 <div align="center">
 
-**Built with ❤️ for Indian Farmers | Smart India Hackathon (SIH) Project**
+**Built with ❤️ for Indian Farmers**
 
 </div>
