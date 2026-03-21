@@ -430,13 +430,55 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.getElementById('yieldForm').addEventListener('submit', function () {
+        document.getElementById('yieldForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            
             const btn = document.getElementById('yieldBtn');
             const txt = document.getElementById('yieldBtnText');
             const spin = document.getElementById('yieldSpinner');
+            const resultBox = document.getElementById('resultBox');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultText = document.getElementById('resultText');
+            const resultLabel = document.getElementById('resultLabel');
+            
             btn.disabled = true;
-            txt.textContent = 'Predicting...';
+            txt.textContent = 'Processing... Waking AI...';
             spin.classList.remove('d-none');
+            resultBox.classList.add('d-none');
+            
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch('https://smart-agriculture-system-bir3.onrender.com/predict_yield', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                resultBox.classList.remove('d-none');
+                
+                if (data.success) {
+                    resultBox.classList.remove('error-result');
+                    resultIcon.textContent = '📈';
+                    resultLabel.textContent = 'Predicted Production';
+                    resultText.innerHTML = `${data.prediction} <span class="fs-4 fw-normal text-muted">Tons</span>`;
+                } else {
+                    resultBox.classList.add('error-result');
+                    resultIcon.textContent = '⚠️';
+                    resultLabel.textContent = 'Error';
+                    resultText.textContent = data.prediction;
+                }
+            } catch (error) {
+                resultBox.classList.remove('d-none');
+                resultBox.classList.add('error-result');
+                resultIcon.textContent = '⚠️';
+                resultLabel.textContent = 'Error';
+                resultText.textContent = 'Connection timeout. Try again.';
+            } finally {
+                btn.disabled = false;
+                txt.textContent = 'Predicting...';
+                spin.classList.add('d-none');
+            }
         });
     </script>
     <div id="google_translate_element" style="display:none;"></div>

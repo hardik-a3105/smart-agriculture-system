@@ -1,5 +1,6 @@
 import logging
 from flask import Flask, request, render_template, jsonify
+from flask_cors import CORS
 import numpy as np
 import pandas as pd
 import joblib
@@ -13,6 +14,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__, template_folder='frontend', static_folder='frontend', static_url_path='')
+CORS(app)
 
 # ================== FLASK OPTIMIZATION ==================
 # Disable auto-reloading of template files in production for faster performance
@@ -142,7 +144,7 @@ def validate_range(value, min_val, max_val, name):
 def predict_crop():
     if get_crop_model() is None:
         logger.error("Crop model not loaded.")
-        return render_template("crop.html", prediction="Model unavailable. Please contact admin.", error=True)
+        return jsonify({"success": False, "prediction": "Model unavailable. Please contact admin.", "error": True}), 503
 
     try:
         N    = float(request.form["n"])
@@ -166,21 +168,21 @@ def predict_crop():
         prediction  = get_crop_model().predict(input_data)[0]
 
         logger.info(f"Crop predicted: {prediction} | Inputs: N={N}, P={P}, K={K}, T={temp}, H={hum}, pH={ph}, R={rain}")
-        return render_template("crop.html", prediction=prediction.capitalize())
+        return jsonify({"success": True, "prediction": prediction.capitalize()})
 
     except ValueError as ve:
         logger.warning(f"Crop validation error: {ve}")
-        return render_template("crop.html", prediction=f"Input Error: {ve}", error=True)
+        return jsonify({"success": False, "prediction": f"Input Error: {ve}", "error": True}), 400
     except Exception as e:
         logger.error(f"Crop prediction failed: {e}")
-        return render_template("crop.html", prediction="Prediction failed. Please check your inputs.", error=True)
+        return jsonify({"success": False, "prediction": "Prediction failed. Please check your inputs.", "error": True}), 500
 
 # ================== FERTILIZER PREDICTION ==================
 @app.route("/predict_fertilizer", methods=["POST"])
 def predict_fertilizer():
     if get_fertilizer_model() is None:
         logger.error("Fertilizer model not loaded.")
-        return render_template("fertilizer.html", fertilizer_res="Model unavailable. Please contact admin.", error=True)
+        return jsonify({"success": False, "prediction": "Model unavailable. Please contact admin.", "error": True}), 503
 
     try:
         temp     = float(request.form["temperature"])
@@ -206,8 +208,7 @@ def predict_fertilizer():
             crop_enc = get_le_crop_fert().transform([crop])[0] if get_le_crop_fert() else crop
         except ValueError as enc_err:
             logger.warning(f"Encoding error for fertilizer: {enc_err}")
-            return render_template("fertilizer.html",
-                                   fertilizer_res=f"Unknown crop or soil type: {enc_err}", error=True)
+            return jsonify({"success": False, "prediction": f"Unknown crop or soil type: {enc_err}", "error": True}), 400
 
         input_arr = np.array([[temp, hum, moisture, soil_enc, crop_enc, N, K, P]])
         raw_pred  = get_fertilizer_model().predict(input_arr)[0]
@@ -228,15 +229,14 @@ def predict_fertilizer():
             prediction_label = str(raw_pred)
 
         logger.info(f"Fertilizer predicted: {prediction_label}")
-        return render_template("fertilizer.html", fertilizer_res=prediction_label)
+        return jsonify({"success": True, "prediction": prediction_label})
 
     except ValueError as ve:
         logger.warning(f"Fertilizer validation error: {ve}")
-        return render_template("fertilizer.html", fertilizer_res=f"Input Error: {ve}", error=True)
+        return jsonify({"success": False, "prediction": f"Input Error: {ve}", "error": True}), 400
     except Exception as e:
         logger.error(f"Fertilizer prediction failed: {e}")
-        return render_template("fertilizer.html",
-                               fertilizer_res="Prediction failed. Please check your inputs.", error=True)
+        return jsonify({"success": False, "prediction": "Prediction failed. Please check your inputs.", "error": True}), 500
 
 # ================== YIELD PREDICTION ==================
 @app.route("/predict_yield", methods=["POST"])
@@ -293,18 +293,14 @@ def predict_yield():
             logger.info("Yield model not loaded, using heuristic estimation.")
             prediction = _heuristic_yield(area, annual_rainfall, fertilizer)
 
-        return render_template("yield.html", yield_prediction=prediction)
+        return jsonify({"success": True, "prediction": prediction})
 
     except ValueError as ve:
         logger.warning(f"Yield validation error: {ve}")
-        return render_template("yield.html", yield_prediction=f"Input Error: {ve}", error=True)
+        return jsonify({"success": False, "prediction": f"Input Error: {ve}", "error": True}), 400
     except Exception as e:
         logger.error(f"Yield prediction failed: {e}")
-        return render_template(
-            "yield.html",
-            yield_prediction="Prediction failed. Please check your inputs.",
-            error=True,
-        )
+        return jsonify({"success": False, "prediction": "Prediction failed. Please check your inputs.", "error": True}), 500
 
 def _heuristic_yield(area, annual_rainfall, fertilizer):
     """Simple heuristic fallback when the ML model is unavailable."""

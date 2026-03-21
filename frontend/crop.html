@@ -250,32 +250,16 @@
     <div class="container">
         <div class="form-card animate__animated animate__fadeInUp">
 
-            {% if prediction %}
-            <div class="prediction-result animate__animated animate__zoomIn {% if error %}error-result{% endif %}">
-                <div class="icon-box" style="font-size: 3rem;">{% if error %}⚠️{% else %}🌱{% endif %}</div>
+            <!-- Dynamic Result Box (Hidden by default) -->
+            <div id="resultBox" class="prediction-result animate__animated animate__zoomIn d-none">
+                <div class="icon-box" id="resultIcon" style="font-size: 3rem;">🌱</div>
                 <div>
-                    <p class="text-muted small text-uppercase fw-bold mb-0">{% if error %}Error{% else %}Recommended
-                        Crop{% endif %}</p>
-                    <h2 class="result-text mb-0">{{ prediction }}</h2>
+                    <p class="text-muted small text-uppercase fw-bold mb-0" id="resultLabel">Recommended Crop</p>
+                    <h2 class="result-text mb-0" id="resultText"></h2>
                 </div>
             </div>
-            {% if not error %}
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const email = localStorage.getItem('farmerEmail');
-                    if (email) {
-                        fetch('/api/history', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ email: email, analysisType: 'Crop Recommendation', result: '{{ prediction }}' })
-                        }).catch(e => console.error("History sync failed", e));
-                    }
-                });
-            </script>
-            {% endif %}
-            {% endif %}
 
-            <form action="/predict_crop" method="POST" id="cropForm">
+            <form id="cropForm">
 
                 <div class="d-flex align-items-center mb-4">
                     <div class="bg-success bg-opacity-10 text-success rounded-circle p-2 me-3">
@@ -374,13 +358,67 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.getElementById('cropForm').addEventListener('submit', function () {
+        document.getElementById('cropForm').addEventListener('submit', async function (e) {
+            e.preventDefault(); // Stop native submission
+            
             const btn = document.getElementById('predictBtn');
             const txt = document.getElementById('btnText');
             const spin = document.getElementById('btnSpinner');
+            const resultBox = document.getElementById('resultBox');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultText = document.getElementById('resultText');
+            const resultLabel = document.getElementById('resultLabel');
+            
             btn.disabled = true;
-            txt.textContent = 'Analyzing...';
+            txt.textContent = 'Analyzing... Waking AI...';
             spin.classList.remove('d-none');
+            resultBox.classList.add('d-none'); // hide previous
+            
+            const formData = new FormData(this);
+            
+            try {
+                // Fetch directly from Python API
+                const response = await fetch('https://smart-agriculture-system-bir3.onrender.com/predict_crop', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                resultBox.classList.remove('d-none');
+                
+                if (data.success) {
+                    resultBox.classList.remove('error-result');
+                    resultIcon.textContent = '🌱';
+                    resultLabel.textContent = 'Recommended Crop';
+                    resultText.textContent = data.prediction;
+                    
+                    // Log History
+                    const email = localStorage.getItem('farmerEmail');
+                    if (email) {
+                        fetch('/api/history', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: email, analysisType: 'Crop Recommendation', result: data.prediction })
+                        }).catch(e => console.error("History sync failed", e));
+                    }
+                } else {
+                    resultBox.classList.add('error-result');
+                    resultIcon.textContent = '⚠️';
+                    resultLabel.textContent = 'Error';
+                    resultText.textContent = data.prediction;
+                }
+            } catch (error) {
+                resultBox.classList.remove('d-none');
+                resultBox.classList.add('error-result');
+                resultIcon.textContent = '⚠️';
+                resultLabel.textContent = 'Error';
+                resultText.textContent = 'Connection timeout. Try again.';
+            } finally {
+                btn.disabled = false;
+                txt.textContent = 'Run Prediction Model';
+                spin.classList.add('d-none');
+            }
         });
     </script>
     <div id="google_translate_element" style="display:none;"></div>

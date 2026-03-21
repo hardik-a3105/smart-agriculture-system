@@ -244,33 +244,16 @@
     <div class="container">
         <div class="form-card animate__animated animate__fadeInUp">
 
-            {% if fertilizer_res %}
-            <div class="result-box animate__animated animate__zoomIn {% if error %}error-result{% endif %}">
-                <div class="rounded-circle bg-white shadow-sm p-3" style="font-size: 2rem;">{% if error %}⚠️{% else
-                    %}🧪{% endif %}</div>
+            <!-- Dynamic Result Box -->
+            <div id="resultBox" class="result-box animate__animated animate__zoomIn d-none">
+                <div class="rounded-circle bg-white shadow-sm p-3" id="resultIcon" style="font-size: 2rem;">🧪</div>
                 <div>
-                    <p class="text-muted small text-uppercase fw-bold mb-0">{% if error %}Error{% else %}Recommended
-                        Fertilizer{% endif %}</p>
-                    <h2 class="result-value mb-0">{{ fertilizer_res }}</h2>
+                    <p class="text-muted small text-uppercase fw-bold mb-0" id="resultLabel">Recommended Fertilizer</p>
+                    <h2 class="result-value mb-0" id="resultText"></h2>
                 </div>
             </div>
-            {% if not error %}
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const email = localStorage.getItem('farmerEmail');
-                    if (email) {
-                        fetch('/api/history', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ email: email, analysisType: 'Fertilizer Advisory', result: '{{ fertilizer_res }}' })
-                        }).catch(e => console.error("History sync failed", e));
-                    }
-                });
-            </script>
-            {% endif %}
-            {% endif %}
 
-            <form action="/predict_fertilizer" method="POST" id="fertForm">
+            <form id="fertForm">
 
                 <div class="section-title">
                     <i class="bi bi-flask-fill"></i>
