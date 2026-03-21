@@ -246,19 +246,16 @@
     <div class="container">
         <div class="form-card animate__animated animate__fadeInUp">
 
-            {% if yield_prediction %}
-            <div class="yield-result animate__animated animate__zoomIn {% if error %}error-result{% endif %}">
-                <div class="rounded-circle bg-white shadow-sm p-3" style="font-size: 2rem;">{% if error %}⚠️{% else
-                    %}�{% endif %}</div>
+            <!-- Dynamic Result Box -->
+            <div id="resultBox" class="yield-result animate__animated animate__zoomIn d-none">
+                <div class="rounded-circle bg-white shadow-sm p-3" id="resultIcon" style="font-size: 2rem;">📈</div>
                 <div>
-                    <p class="text-muted small text-uppercase fw-bold mb-0">{% if error %}Error{% else %}Predicted Production{% endif %}</p>
-                    <h2 class="yield-value mb-0">{{ yield_prediction }} <span class="fs-4 fw-normal text-muted">{% if
-                            not error %}Tons{% endif %}</span></h2>
+                    <p class="text-muted small text-uppercase fw-bold mb-0" id="resultLabel">Predicted Production</p>
+                    <h2 class="yield-value mb-0" id="resultText"></h2>
                 </div>
             </div>
-            {% endif %}
 
-            <form action="/predict_yield" method="POST" id="yieldForm">
+            <form id="yieldForm">
 
                 <div class="section-header">
                     <i class="bi bi-geo-fill"></i>
@@ -476,7 +473,7 @@
                 resultText.textContent = 'Connection timeout. Try again.';
             } finally {
                 btn.disabled = false;
-                txt.textContent = 'Predicting...';
+                txt.textContent = 'Predict Production';
                 spin.classList.add('d-none');
             }
         });

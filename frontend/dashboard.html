@@ -353,7 +353,12 @@
                 <div class="history-card">
                     <div class="table-header">
                         <h5 class="fw-bold mb-0">Recent Analysis History</h5>
-                        <button class="btn btn-sm btn-outline-secondary rounded-pill">View All</button>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill" id="viewAllBtn" style="display:none;">View All</button>
+                            <button class="btn btn-sm btn-outline-danger rounded-pill" id="clearHistoryBtn" style="display:none;">
+                                <i class="bi bi-trash3 me-1"></i>Clear History
+                            </button>
+                        </div>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-hover align-middle">
@@ -384,6 +389,38 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        let allHistory = [];
+        let showingAll = false;
+
+        function renderHistory(items) {
+            const historyTbody = document.getElementById('history-table-body');
+            if (items.length === 0) {
+                historyTbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No history found. Run a prediction to get started!</td></tr>';
+                return;
+            }
+            historyTbody.innerHTML = '';
+            items.forEach(item => {
+                const d = new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                let icon = 'bi-tree';
+                let colorClass = 'bg-success bg-opacity-10 text-success';
+                if (item.analysisType.includes('Yield')) {
+                    icon = 'bi-graph-up-arrow';
+                    colorClass = 'bg-primary bg-opacity-10 text-primary';
+                } else if (item.analysisType.includes('Fertilizer')) {
+                    icon = 'bi-flask';
+                    colorClass = 'bg-warning bg-opacity-10 text-warning text-dark';
+                }
+                historyTbody.innerHTML += `
+                    <tr>
+                        <td>${d}</td>
+                        <td><i class="bi ${icon} me-2"></i>${item.analysisType}</td>
+                        <td>Dynamic AI</td>
+                        <td><span class="badge-status ${colorClass}">${item.result}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', async function () {
             // 1. Update Farmer Name from Login
             const email = localStorage.getItem('farmerEmail');
@@ -416,35 +453,21 @@
                         document.getElementById('dash-memberSince').innerText = 'Recent';
                     }
 
-                    // Populate History Table
-                    const historyTbody = document.getElementById('history-table-body');
+                    // Populate History
                     if (user.history && user.history.length > 0) {
-                        historyTbody.innerHTML = '';
-                        // Sort by date desc and take top 5
-                        const recentHistory = user.history.sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
-                        recentHistory.forEach(item => {
-                            const d = new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                            let icon = 'bi-tree';
-                            let colorClass = 'bg-success bg-opacity-10 text-success';
-                            if (item.analysisType.includes('Yield')) {
-                                icon = 'bi-graph-up-arrow';
-                                colorClass = 'bg-primary bg-opacity-10 text-primary';
-                            } else if (item.analysisType.includes('Fertilizer')) {
-                                icon = 'bi-flask';
-                                colorClass = 'bg-warning bg-opacity-10 text-warning text-dark';
-                            }
-                            historyTbody.innerHTML += `
-                                <tr>
-                                    <td>${d}</td>
-                                    <td><i class="bi ${icon} me-2"></i>${item.analysisType}</td>
-                                    <td>Dynamic AI</td>
-                                    <td><span class="badge-status ${colorClass}">${item.result}</span></td>
-                                </tr>
-                            `;
-                        });
-                        document.getElementById('stat-field-tests').innerText = user.history.length;
+                        allHistory = user.history.sort((a,b) => new Date(b.date) - new Date(a.date));
+                        document.getElementById('stat-field-tests').innerText = allHistory.length;
+
+                        // Show top 5 by default
+                        renderHistory(allHistory.slice(0, 5));
+
+                        // Show View All button only if more than 5
+                        if (allHistory.length > 5) {
+                            document.getElementById('viewAllBtn').style.display = 'inline-block';
+                        }
+                        document.getElementById('clearHistoryBtn').style.display = 'inline-block';
                     } else {
-                        historyTbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No history found. Run a prediction to get started!</td></tr>';
+                        renderHistory([]);
                         document.getElementById('stat-field-tests').innerText = '0';
                     }
 
@@ -478,9 +501,49 @@
             }
 
             // 2. Set Real-time Date
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             const today = new Date();
-            document.getElementById('live-date').innerText = today.toLocaleDateString('en-US', options);
+            document.getElementById('live-date').innerText = today.toLocaleDateString('en-US', dateOptions);
+        });
+
+        // View All toggle
+        document.getElementById('viewAllBtn').addEventListener('click', function () {
+            showingAll = !showingAll;
+            if (showingAll) {
+                renderHistory(allHistory);
+                this.textContent = 'Show Less';
+            } else {
+                renderHistory(allHistory.slice(0, 5));
+                this.textContent = 'View All';
+            }
+        });
+
+        // Clear History
+        document.getElementById('clearHistoryBtn').addEventListener('click', async function () {
+            if (!confirm('Are you sure you want to clear all your analysis history? This action cannot be undone.')) return;
+            
+            const email = localStorage.getItem('farmerEmail');
+            if (!email) return;
+
+            try {
+                const res = await fetch('/api/history', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    allHistory = [];
+                    renderHistory([]);
+                    document.getElementById('stat-field-tests').innerText = '0';
+                    this.style.display = 'none';
+                    document.getElementById('viewAllBtn').style.display = 'none';
+                } else {
+                    alert('Failed to clear history: ' + data.message);
+                }
+            } catch (err) {
+                alert('Error clearing history. Try again.');
+            }
         });
 
     </script>

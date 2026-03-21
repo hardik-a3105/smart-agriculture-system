@@ -191,9 +191,31 @@ app.post("/api/history", async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
-    res.json({ success: true, message: "History saved successfully" });
+  res.json({ success: true, message: "History saved successfully" });
   } catch (error) {
     console.error("Save history error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// DELETE history
+app.delete("/api/history", async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required" });
+    }
+    const user = await User.findOneAndUpdate(
+      { email },
+      { $set: { history: [] } },
+      { new: true }
+    );
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    res.json({ success: true, message: "History cleared successfully" });
+  } catch (error) {
+    console.error("Clear history error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
